@@ -1,3 +1,4 @@
+
 module Main where
 
 import qualified Types as Types 
@@ -10,7 +11,8 @@ import Text.Megaparsec.Error
 import Control.Applicative 
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
-
+import qualified Network.TLS as TLS
+import qualified Data.ByteString as BS
 
 
 main :: IO ()
