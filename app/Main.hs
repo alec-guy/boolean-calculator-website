@@ -8,6 +8,10 @@ import qualified Evaluator as Evaluator
 import Text.Megaparsec (parse, eof)
 import Text.Megaparsec.Error 
 import Control.Applicative 
+import qualified Network.Socket as NS
+import qualified Network.Socket.ByteString as NSB
+
+
 
 main :: IO ()
 main = do
