@@ -4,6 +4,7 @@ import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
 import qualified Network.TLS as TLS
 import qualified Data.ByteString as BS
+import qualified Data.Map.Strict as Map
 
 newtype BoolChar = BoolChar Bool deriving (Eq, Show)
 

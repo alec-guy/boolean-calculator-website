@@ -1,4 +1,3 @@
-
 module Main where
 
 import qualified Types as Types 
