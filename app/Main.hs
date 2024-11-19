@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Main where
 
 import qualified Types as Types 
@@ -12,6 +14,7 @@ import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
 import qualified Network.TLS as TLS
 import qualified Network.TLS.Extra.Cipher as Cipher
+import qualified Network.TLS.Quic as Quic
 import Data.X509.CertificateStore 
 import qualified Data.ByteString as BS
 import Data.Word 
@@ -26,6 +29,31 @@ stringToWord8 = map (fromIntegral . ord)
 main :: IO ()
 main = do
   putStrLn "Hello Haskell!"
+  maybeCertificateStore <- readCertificateStore "C:/Users/alecb/certsTwo/cacert.pem"
+  maybeCredential       <- credentialLoadX509 "C:/Users/alecb/logicCalcPrivateKey/public.pem" "C:/Users/alecb/logicCalcPrivateKey/private.pem"
+  store                 <- (case maybeCertificateStore of
+                             Nothing     -> error "could not find certificate store"
+                            Just (store) ->  return store)
+  credential            <- (case maybeCredential of 
+                             Left s -> error s 
+                             Right c -> return c)
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just hostname) (Just "8000")
+  let socketAddress = NS.addrAddress addr
+      port8000      <- NS.openSocket addr
+      socketType    <- NS.getSocketType port8000
+  case NS.isSupportedSocketType socketType  of 
+      True  -> putStrLn "successful socket type"
+      False -> do putStrLn $ show socketType 
+                  error "Not supported"
+  NS.connect port8000 socketAddress
+  let myBackend      = MyBackend{mySocket = port8000}
+      newShared      = (serverShared defaultParamsServer) {sharedCAStore = store}
+      newShared'     = newShared $
+                      {sharedCredentials = Credentials [credential]
+                      ,sharedHelloExtensions = 
+                      }  
+      myParamsServer = defaultParamsServer {serverShared = newShared}
+  context <- contextNew myBackend defaultParamsServer
   putStrLn "Testing Expression parser."
   i <- getLine 
   case parse (Parser.parseExpression <* eof)  "" i  of 
