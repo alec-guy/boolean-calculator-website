@@ -5,11 +5,11 @@ import Parser
 
 
 
-evalBExpr :: Expression -> Bool
+evalBExpr :: (Expression Bool Bool) -> Bool
 evalBExpr (Constant t)                                    = t
-evalBExpr (Product (Binary f) (Constant t) (Constant t')) = f (BoolChar t) (BoolChar t')
-evalBExpr (One (Unary f) (Constant t))                    = f $ BoolChar t
-evalBExpr (Product (Binary f) e (Constant t))             = f (BoolChar $ evalBExpr e) (BoolChar t)
-evalBExpr (Product (Binary f) (Constant t) e)             = f (BoolChar t) (BoolChar $ evalBExpr e)
-evalBExpr (Product (Binary f) e e')                       = f (BoolChar $ evalBExpr e) (BoolChar $ evalBExpr e')
-evalBExpr (One (Unary f) e )                              = f (BoolChar $ evalBExpr e)
+evalBExpr (Product (Binary f) (Constant t) (Constant t')) = f t t'
+evalBExpr (One (Unary f) (Constant t))                    = f t
+evalBExpr (Product (Binary f) e (Constant t))             = f ( evalBExpr e) t
+evalBExpr (Product (Binary f) (Constant t) e)             = f t (evalBExpr e)
+evalBExpr (Product (Binary f) e e')                       = f (evalBExpr e) ( evalBExpr e')
+evalBExpr (One (Unary f) e )                              = f ( evalBExpr e)

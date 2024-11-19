@@ -40,13 +40,13 @@ mySymbolParser = MegaLexer.symbol spaceParser
 parens :: Parser a -> Parser a
 parens = Combinators.between (mySymbolParser "(") (mySymbolParser ")")
 
-parseConstant :: Parser Types.Expression
+parseConstant :: Parser (Types.Expression Bool Bool) 
 parseConstant = do 
     spaceParser
     eitherTrueOrFalse <- myLexemeWrapper $ Combinators.choice [MegaChar.char 'T', MegaChar.char' 'F']
     return $ Types.Constant $ (eitherTrueOrFalse == 'T')
 
-parseTerm :: Parser Types.Expression 
+parseTerm :: Parser (Types.Expression Bool Bool)
 parseTerm = do 
     spaceParser
     myLexemeWrapper (
@@ -55,7 +55,7 @@ parseTerm = do
      , parseConstant          -- Then try parsing constants
      ])
 
-parseExpression :: Parser Types.Expression
+parseExpression :: Parser (Types.Expression Bool Bool)
 parseExpression = do 
     myLexemeWrapper $ Expr.makeExprParser parseTerm table 
     where   table = [ [prefix ["~"] (Types.One Types.norChar)
@@ -73,13 +73,17 @@ parseExpression = do
                     ]
                   ]
 
-prefix :: [String] -> (Types.Expression -> Types.Expression) -> Expr.Operator Parser Types.Expression 
+prefix :: [String] -> ((Types.Expression Bool Bool) -> Types.Expression Bool Bool) 
+                   -> Expr.Operator Parser (Types.Expression Bool Bool) 
 prefix l f = Expr.Prefix (f <$ (Combinators.choice (mySymbolParser <$> l)))
-binary0 :: [String] -> (Types.Expression -> Types.Expression -> Types.Expression) -> Expr.Operator Parser Types.Expression 
+binary0 :: [String] -> ((Types.Expression Bool Bool) -> (Types.Expression Bool Bool) -> (Types.Expression Bool Bool)) 
+                    -> Expr.Operator Parser (Types.Expression Bool Bool)
 binary0 l f = Expr.InfixR $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
-binary1 :: [String] -> (Types.Expression -> Types.Expression -> Types.Expression) -> Expr.Operator Parser Types.Expression 
+binary1 :: [String] -> ((Types.Expression Bool Bool) -> (Types.Expression Bool Bool) -> (Types.Expression Bool Bool)) 
+                    -> Expr.Operator Parser (Types.Expression Bool Bool)
 binary1 l f = Expr.InfixL $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
-binary2 :: [String] -> (Types.Expression -> Types.Expression -> Types.Expression) -> Expr.Operator Parser Types.Expression 
+binary2 :: [String] -> ((Types.Expression Bool Bool) -> (Types.Expression Bool Bool) -> (Types.Expression Bool Bool))
+                    -> Expr.Operator Parser (Types.Expression Bool Bool)
 binary2 l f = Expr.InfixN $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
  
 ---------------------

@@ -6,21 +6,26 @@ import qualified Network.TLS as TLS
 import qualified Data.ByteString as BS
 import qualified Data.Map.Strict as Map
 
-newtype BoolChar = BoolChar Bool deriving (Eq, Show)
-
+{-
 data BooleanOperation = Binary (BoolChar -> BoolChar -> Bool)
                       | Unary  (BoolChar -> Bool)
-      
+-}
+data Operation a b = Binary (a -> a -> b)
+                   | Unary (a -> b)
 
-makeBinary :: (Bool -> Bool -> Bool) -> BoolChar -> BoolChar -> Bool
-makeBinary f (BoolChar b) (BoolChar b') = f b b'
-makeUnary :: (Bool -> Bool) -> BoolChar -> Bool 
-makeUnary f (BoolChar b) = f b
+makeBinary :: (Bool -> Bool -> Bool) -> Bool -> Bool -> Bool
+makeBinary f b b' = f b b'
+makeUnary :: (Bool -> Bool) -> Bool -> Bool 
+makeUnary f b = f b
 
-
-data Expression = Constant Bool
-                | Product BooleanOperation Expression Expression 
-                | One BooleanOperation Expression
+{-
+data BinaryT a = Leaf 
+               | Node (BinaryT a) a (BinaryT a)
+               deriving (Show, Eq) 
+-}
+data Expression a b = Constant a
+                    | Product (Operation a b ) (Expression a b) (Expression a b)
+                    | One (Operation a b) (Expression a b)
 
 
 andChar = Binary $ makeBinary (&&)
