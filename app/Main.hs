@@ -14,7 +14,6 @@ import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
 import qualified Network.TLS as TLS
 import qualified Network.TLS.Extra.Cipher as Cipher
-import qualified Network.TLS.QUIC as Quic
 import Data.X509.CertificateStore 
 import qualified Data.ByteString as BS
 import Data.Word 
@@ -37,7 +36,7 @@ main = do
   credential            <- (case maybeCredential of 
                              Left s -> error s 
                              Right c -> return c)
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "www.localhost.com") (Just "8000")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "localhost") (Just "8000")
   let socketAddress = NS.addrAddress addr
   port8000      <- NS.openSocket addr
   socketType    <- NS.getSocketType port8000
@@ -45,10 +44,10 @@ main = do
       True  -> putStrLn "successful socket type"
       False -> do putStrLn $ show socketType 
                   error "Not supported"
-  NS.connect port8000 socketAddress
+ -- NS.connect port8000 socketAddress
   let myBackend      = Types.MyBackend {Types.mySockey = port8000}
       newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
-      newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential] ,TLS.sharedHelloExtensions = []}  
+      newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
       myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
   context <- TLS.contextNew myBackend myParamsServer
   putStrLn "Testing Expression parser."
