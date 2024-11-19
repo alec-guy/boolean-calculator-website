@@ -4,6 +4,7 @@ import Html.Attributes exposing (..)
 import Html exposing (..)
 import Http exposing (..)
 import Json.Dedcode exposing (..)
+import Maybe exposing (withDefault)
 
 
 main = 
@@ -18,8 +19,8 @@ type Model = Failure
            | Success ServerResponse
 
 type alias ServerResponse = 
-      { parseError : Maybe String 
-      , evaluation : Maybe Bool 
+      { parseError : String 
+      , evaluation : String 
       }
 init : () -> (Model, Cmd Msg)
 init _ = 
@@ -51,6 +52,7 @@ view model =
   ,viewServerResponse model 
   ]
 
+
 viewServerResponse : Model -> Html Msg 
 viewServerResponse model = 
    case model of 
@@ -63,7 +65,24 @@ viewServerResponse model =
      text "Loading"
     Success serverResponse -> 
      case serverResponse.evaluation of 
-      Nothing -> div []
+      "Nothing" -> div []
                  [button [onClick MorePlease, style "display" "block"] [text "More Please!"]
-                 , blockquote [] [text serverResponse.]
-    ]
+                 , blockquote [] [text <| withDefault serverResponse.parseError]
+                 ]
+      b         -> div []
+                 [button [onClick MorePlease, style "display" "block"] [text "More Please!"]
+                 , blockquote [] [text b]
+                 ]
+    
+getServerResponse : Cmd Msg 
+getServerResponse = 
+    Http.get 
+    { url = "https://localhost/8000"
+    , expect = Http.expectJson GotResult resultDecoder
+    }
+
+resultDecoder : Decoder ServerResponse
+resultDecoder = 
+  map2 ServerResponse
+   (field "parseError" string)
+   (field "evaluation" string)

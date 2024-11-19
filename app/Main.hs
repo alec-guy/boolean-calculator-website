@@ -36,7 +36,7 @@ main = do
   credential            <- (case maybeCredential of 
                              Left s -> error s 
                              Right c -> return c)
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "localhost") (Just "8000")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "localhost") (Just "3000")
   let socketAddress = NS.addrAddress addr
   port8000      <- NS.openSocket addr
   socketType    <- NS.getSocketType port8000
