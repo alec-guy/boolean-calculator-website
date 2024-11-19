@@ -36,19 +36,19 @@ main = do
   credential            <- (case maybeCredential of 
                              Left s -> error s 
                              Right c -> return c)
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "localhost") (Just "3000")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "Nothing") (Just "3000")
   let socketAddress = NS.addrAddress addr
-  port8000      <- NS.openSocket addr
-  socketType    <- NS.getSocketType port8000
-  case NS.isSupportedSocketType socketType  of 
-      True  -> putStrLn "successful socket type"
-      False -> do putStrLn $ show socketType 
-                  error "Not supported"
- -- NS.connect port8000 socketAddress
-  let myBackend      = Types.MyBackend {Types.mySockey = port8000}
+  port3000      <- NS.openSocket addr
+  socketType    <- NS.getSocketType port3000
+  let myBackend      = Types.MyBackend {Types.mySockey = port3000}
       newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
       newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
       myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
+  NS.bind port3000 socketAddress 
+  NS.listen port3000 5
+  putStrLn "Server listening on port 3000"
+  forever $ do 
+    (conn, clientAddr) <- NS.accept sock 
   context <- TLS.contextNew myBackend myParamsServer
   putStrLn "Testing Expression parser."
   i <- getLine 

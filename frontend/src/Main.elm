@@ -2,9 +2,9 @@ module Main exposing (..)
 import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html exposing (..)
+import Html.Events exposing (..)
 import Http exposing (..)
-import Json.Dedcode exposing (..)
+import Json.Decode exposing (..)
 import Maybe exposing (withDefault)
 
 
@@ -36,7 +36,7 @@ update msg model =
     MorePlease -> (Loading, getServerResponse)
     (GotResult result) -> case result of 
                             Ok r -> (Success r, Cmd.none)
-    (Err _) ->  (Failure, Cmd.none)
+                            (Err _) ->  (Failure, Cmd.none)
 
 
 subscriptions : Model -> Sub Msg 
@@ -64,11 +64,11 @@ viewServerResponse model =
      case serverResponse.evaluation of 
       "Nothing" -> div []
                  [button [onClick MorePlease, style "display" "block"] [text "More Please!"]
-                 , blockquote [] [text <| withDefault serverResponse.parseError]
+                 , blockquote [] [text serverResponse.parseError]
                  ]
-      b         -> div []
-                 [button [onClick MorePlease, style "display" "block"] [text "More Please!"]
-                 , blockquote [] [text b]
+      _        -> div []
+                 [button [onClick MorePlease] [text "More Please!"]
+                 , blockquote [] [text serverResponse.evaluation]
                  ]
     
 getServerResponse : Cmd Msg 
