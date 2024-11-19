@@ -10,6 +10,7 @@ import qualified Evaluator as Evaluator
 import Text.Megaparsec (parse, eof)
 import Text.Megaparsec.Error 
 import Control.Applicative ((<*))
+import qualified Control.Monad as CM
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
 import qualified Network.TLS as TLS
@@ -28,21 +29,13 @@ stringToWord8 = map (fromIntegral . ord)
 main :: IO ()
 main = do
   putStrLn "Hello Haskell!"
-  maybeCertificateStore <- readCertificateStore "C:/Users/alecb/certsTwo/cacert.pem"
-  maybeCredential       <- TLS.credentialLoadX509 "C:/Users/alecb/logicCalcPrivateKey/public.pem" "C:/Users/alecb/logicCalcPrivateKey/private.pem"
-  store                 <- (case maybeCertificateStore of
-                             Nothing     -> error "could not find certificate store"
-                             Just (store) ->  return store)
-  credential            <- (case maybeCredential of 
-                             Left s -> error s 
-                             Right c -> return c)
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "Nothing") (Just "3000")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "3000")
   let socketAddress = NS.addrAddress addr
   port3000      <- NS.openSocket addr
   NS.bind port3000 socketAddress 
   NS.listen port3000 5
   putStrLn "Server listening on port 3000"
-  forever $ do 
+  CM.forever $ do 
     (conn, clientAddr) <- NS.accept port3000 
     putStrLn $ "Connection accepted from: " ++ show clientAddr 
     handleClient conn
@@ -52,14 +45,31 @@ main = do
     (Right expr) -> do 
                   putStrLn "Successful parse"
                   putStrLn $ show $ Evaluator.evalBExpr expr
-  TLS.bye context
 
 
   
 handleClient :: NS.Socket -> IO ()
 handleClient conn = do 
-  let myBackend      = Types.MyBackend {Types.mySockey = conn}
+  maybeCertificateStore <- readCertificateStore "C:/Users/alecb/certsTwo/cacert.pem"
+  maybeCredential       <- TLS.credentialLoadX509 "C:/Users/alecb/logicCalcPrivateKey/public.pem" "C:/Users/alecb/logicCalcPrivateKey/private.pem"
+  store                 <- (case maybeCertificateStore of
+                             Nothing     -> error "could not find certificate store"
+                             Just (store) ->  return store)
+  credential            <- (case maybeCredential of 
+                             Left s -> error s 
+                             Right c -> return c)
+  let 
+      myBackend      = Types.MyBackend {Types.mySockey = conn}
       newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
       newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
       myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
   context <- TLS.contextNew myBackend myParamsServer
+  TLS.handshake context 
+  msg <- TLS.recvData context 
+  putStrLn "Msg received"
+  BS.putStr $ msg
+  SIO.hFlush SIO.stdout
+  TLS.sendData context "Hello, client! "
+  TLS.bye context 
+  NS.close conn
+
