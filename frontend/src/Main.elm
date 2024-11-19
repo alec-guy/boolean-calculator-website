@@ -1,3 +1,4 @@
+module Main exposing (..)
 import Browser exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -32,14 +33,10 @@ type Msg = MorePlease
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
    case msg of 
-    MorePlease -> 
-     (Loading, getServerResponse)
-     (GotResult result) -> 
-       case result of 
-        Ok r -> 
-         (Success r, Cmd.none)
-        (Err _) -> 
-        (Failure, Cmd.none)
+    MorePlease -> (Loading, getServerResponse)
+    (GotResult result) -> case result of 
+                            Ok r -> (Success r, Cmd.none)
+    (Err _) ->  (Failure, Cmd.none)
 
 
 subscriptions : Model -> Sub Msg 
@@ -77,7 +74,7 @@ viewServerResponse model =
 getServerResponse : Cmd Msg 
 getServerResponse = 
     Http.get 
-    { url = "https://localhost/8000"
+    { url = "https://localhost/3000"
     , expect = Http.expectJson GotResult resultDecoder
     }
 
