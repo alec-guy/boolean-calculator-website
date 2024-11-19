@@ -39,18 +39,13 @@ main = do
   addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "Nothing") (Just "3000")
   let socketAddress = NS.addrAddress addr
   port3000      <- NS.openSocket addr
-  socketType    <- NS.getSocketType port3000
-  let myBackend      = Types.MyBackend {Types.mySockey = port3000}
-      newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
-      newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
-      myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
   NS.bind port3000 socketAddress 
   NS.listen port3000 5
   putStrLn "Server listening on port 3000"
   forever $ do 
-    (conn, clientAddr) <- NS.accept sock 
-  context <- TLS.contextNew myBackend myParamsServer
-  putStrLn "Testing Expression parser."
+    (conn, clientAddr) <- NS.accept port3000 
+    putStrLn $ "Connection accepted from: " ++ show clientAddr 
+    handleClient conn
   i <- getLine 
   case parse (Parser.parseExpression <* eof)  "" i  of 
     (Left e) -> putStrLn $ errorBundlePretty e 
@@ -61,5 +56,10 @@ main = do
 
 
   
-        
-
+handleClient :: NS.Socket -> IO ()
+handleClient conn = do 
+  let myBackend      = Types.MyBackend {Types.mySockey = conn}
+      newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
+      newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
+      myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
+  context <- TLS.contextNew myBackend myParamsServer
