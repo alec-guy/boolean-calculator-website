@@ -30,32 +30,30 @@ import Data.Maybe (fromJust)
 
 main :: IO ()
 main = do
-  safeServer httpServer
-  {-
   _ <- Concurrent.forkIO $ safeServer httpServer 
   _ <- Concurrent.forkIO $ safeServer httpsServer 
   putStrLn "Servers are running.. Press Ctrl+C to stop."
   CM.forever $ Concurrent.threadDelay maxBound
-  -}
+
 
 safeServer :: IO () -> IO ()
 safeServer server = server `CE.catch` \e -> do 
      putStrLn $ "Server encountered an error: " ++ show (e :: CE.SomeException)
      safeServer server -- Restatrt the server
 
- hostName :: BS.ByteString 
- hostName = "localhost:8001"
+hostName :: BS.ByteString 
+hostName = "localhost:8002"
 
 httpServer :: IO () 
 httpServer = do 
   putStrLn "HTTP server is running..."
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just hostName) (Just "8001")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just $ "localhost") (Just "8002")
   let socketAddress = NS.addrAddress addr
   port      <- NS.openSocket addr
   NS.setSocketOption port NS.ReuseAddr 1
   NS.bind port socketAddress 
   NS.listen port 5
-  putStrLn "Server listening on port 8001"
+  putStrLn "Server listening on port 8002"
   CM.forever $ do 
     (conn, clientAddr) <- NS.accept port 
     putStrLn $ "HTTP Connection accepted from: " ++ show clientAddr 
@@ -80,9 +78,10 @@ httpsServer = do
   addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "8006")
   let socketAddress = NS.addrAddress addr
   port      <- NS.openSocket addr
+  NS.setSocketOption port NS.ReuseAddr 1
   NS.bind port socketAddress 
   NS.listen port 5
-  putStrLn "Server listening on port 443"
+  putStrLn "Server listening on port 8006"
   CM.forever $ do 
     (conn, clientAddr) <- NS.accept port 
     putStrLn $ "HTTPS Connection accepted from: " ++ show clientAddr 
@@ -139,8 +138,7 @@ handleMsg msg = do
 
         (_, _ , False) -> do 
                     putStrLn "Making httpResponse, did not find host name"
-                    response <- makeHTTPResponse version0 method0 path0
-
+                    return BS.empty 
 
 makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
 makeHTTPResponse version0 method0 path = do 
