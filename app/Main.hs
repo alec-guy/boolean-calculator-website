@@ -73,32 +73,33 @@ httpsServer = do
     TLS.handshake context 
     msg      <- TLS.recvData context 
     response <- handleMsg msg 
-    TLS.sendData context response 
-  TLS.bye context 
-  NS.close conn
+    TLS.sendData context (BS.fromStrict response) 
+    TLS.bye context 
+    NS.close conn
 
 --------------------------------------------------------------------------------------
 ----        HELPER        STUFF BECAUSE THE GUYS AT THE TOP ARE NOT STRONG ENOUGH I GUESS  -----------------
 
-handleMsg :: BS.ByteString -> IO ()
+handleMsg :: BS.ByteString -> IO BS.ByteString
 handleMsg msg = do 
   case (parse Parser.parseHTTPRequest "" msg) of 
     Left e -> do  
                putStrLn "Error parsing message..."
                putStrLn $ errorBundlePretty e 
                putStr "Message: "
-               SIO.hFlush stdout 
+               SIO.hFlush SIO.stdout 
                BS.putStr msg 
-               hFlush stdout 
+               SIO.hFlush SIO.stdout
+               return BS.empty  
     Right httpReq -> do 
                       let version0 = Types.version httpReq 
-                      method0  = Types.version httpReq 
-                      path0    = Types.path httpReq 
+                          method0  = Types.version httpReq 
+                          path0    = Types.path httpReq 
                       case (version0, method0 ) of 
                         ("HTTP/1.1", "GET") -> do 
                                       response <- makeHTTPResponse version0 method0 path0 
-                                      TLS.sendData context (BS.fromStrict response) 
-                        _                   -> do putStrLn "Somebody sent something weird..."
+                                      return response 
+                        _                   -> return BS.empty 
 
 makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
 makeHTTPResponse version0 method0 path = do 
