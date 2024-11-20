@@ -49,15 +49,15 @@ idChar = Unary $ makeUnary id
 ---------------------------------
 ---     NETWORKING PORTION -----------
 
-data HTTP = HTTP
+data HTTPResponse = HTTPResponse
           { statusLine :: StatusLine
-          , headers :: Headers
+          , headersHR :: Headers
           , body :: BS.ByteString 
           }
           deriving (Show, Eq)
 
 data StatusLine = StatusLine
-                {   httpVersion :: BS.ByteString
+                {   versionHR :: BS.ByteString
                 ,   statusCode :: Int
                 ,   reasonPhrase :: BS.ByteString
                 }
@@ -66,6 +66,14 @@ data StatusLine = StatusLine
 data Headers = Headers{pairs :: (Map.Map BS.ByteString BS.ByteString)} deriving (Show, Eq)
 
 data MyBackend = MyBackend {mySockey :: NS.Socket} deriving (Show, Eq)
+
+data HTTPRequest = HTTPRequest 
+    { method :: BS.ByteString        -- e.g., "GET"
+    , path :: BS.ByteString         -- e.g., "/some/path"
+    , version :: BS.ByteString      -- e.g., "http/1.1"
+    , headers :: Headers 
+    , maybeBody :: Maybe BS.ByteString -- usually empty for get
+    }
 
 instance TLS.HasBackend MyBackend where
     initializeBackend mb = return ()

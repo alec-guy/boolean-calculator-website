@@ -29,6 +29,12 @@ stringToWord8 = map (fromIntegral . ord)
 main :: IO ()
 main = do
   putStrLn "Hello Haskell!"
+  i <- getLine 
+  case parse (Parser.parseExpression <* eof)  "" i  of 
+    (Left e) -> putStrLn $ errorBundlePretty e 
+    (Right expr) -> do 
+                  putStrLn "Successful parse"
+                  putStrLn $ show $ Evaluator.evalBExpr expr
   addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "3000")
   let socketAddress = NS.addrAddress addr
   port3000      <- NS.openSocket addr
@@ -39,14 +45,10 @@ main = do
     (conn, clientAddr) <- NS.accept port3000 
     putStrLn $ "Connection accepted from: " ++ show clientAddr 
     handleClient conn
-  i <- getLine 
-  case parse (Parser.parseExpression <* eof)  "" i  of 
-    (Left e) -> putStrLn $ errorBundlePretty e 
-    (Right expr) -> do 
-                  putStrLn "Successful parse"
-                  putStrLn $ show $ Evaluator.evalBExpr expr
 
 
+acmeChallegne :: BS.ByteString 
+acmeChallegne = "/.well-known/acme-challenge/LRN32Tz7blgmz3gpxqEjRcrjipSHRi-oYjpD5zAX7vU"
   
 handleClient :: NS.Socket -> IO ()
 handleClient conn = do 
@@ -67,7 +69,10 @@ handleClient conn = do
   TLS.handshake context 
   msg <- TLS.recvData context 
   putStrLn "Msg received"
-  BS.putStr $ msg
+  http <- case (parse Parser.parseHTTPRequest "" msg) of 
+           Left e -> return () 
+           Right ht -> 
+  BS.putStr msg
   SIO.hFlush SIO.stdout
   TLS.sendData context "Hello, client! "
   TLS.bye context 

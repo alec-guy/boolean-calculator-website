@@ -16,6 +16,8 @@ import qualified Control.Monad as CM
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString as BS
 import Data.Char (ord)
+import Data.Char (GeneralCategory(LetterNumber))
+import Data.Word
 
 
 
@@ -89,14 +91,14 @@ binary2 l f = Expr.InfixN $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
 ---------------------
 ---- Networking portion 
 
-parseHTTP :: ByteParser Types.HTTP
-parseHTTP = do
+parseHTTPResponse :: ByteParser Types.HTTPResponse
+parseHTTPResponse = do
     statusLine0 <- parseStatusLine
-    headers0    <- parseHeaders 
+    headersHR0  <- parseHeaders
     body0       <- Combinators.many Mega.anySingle
-    return $ Types.HTTP 
+    return $ Types.HTTPResponse 
            {Types.statusLine = statusLine0
-           ,Types.headers = headers0 
+           ,Types.headersHR = headersHR0 
            ,Types.body = BS.pack body0
            }
 
@@ -138,7 +140,7 @@ parseHeaders = do
 
 parseStatusLine :: ByteParser Types.StatusLine
 parseStatusLine = do
-      httpVersion0    <- parseHttpVersion
+      versionHR0    <- parseHttpVersion
       MegaByte.hspace
       statusCode0     <- parseStatusCode
       MegaByte.hspace
@@ -146,7 +148,7 @@ parseStatusLine = do
       parseCarriageReturn
       return $ Types.StatusLine
              {
-                Types.httpVersion   = httpVersion0
+                Types.versionHR   = versionHR0
              ,  Types.statusCode    = statusCode0
              ,  Types.reasonPhrase  = reasonPhrase0
              }
@@ -161,3 +163,52 @@ parseStatusLine = do
             parseCarriageReturn = MegaByte.crlf
 
 
+--- 
+parseHTTPRequest :: ByteParser Types.HTTPRequest
+parseHTTPRequest = do 
+           method0    <- parseMethod 
+           path0      <- parsePath
+           version0   <- parseVersionResponse
+           headers0   <- parseHeaders
+           maybeBody0 <- parseMaybeBody
+           return $ Types.HTTPRequest 
+                  {Types.method    = method0
+                  ,Types.path      = path0
+                  ,Types.version  = version0 
+                  ,Types.headers   = headers0
+                  ,Types.maybeBody = maybeBody0
+                  }
+           where parseMaybeBody = do 
+                      e <- Combinators.eitherP (MegaByte.crlf) (return ())
+                      case e of 
+                        Left _ -> return Nothing 
+                        Right l -> do 
+                                    rest <- Mega.takeRest 
+                                    return $ Just $ rest
+   
+parseMethod :: ByteParser BS.ByteString 
+parseMethod = do 
+       Combinators.choice [MegaByte.string "GET"
+                          ,MegaByte.string "DELETE"
+                          ,MegaByte.string "HEAD"
+                          ,MegaByte.string "POST"
+                          ,MegaByte.string "PUT"
+                          ,MegaByte.string "CONNECT"
+                          ,MegaByte.string "TRACE"
+                          ,MegaByte.string "PATCH"
+                          ]
+
+parsePath :: ByteParser BS.ByteString 
+parsePath = do 
+     MegaByte.hspace1 
+     root <- MegaByte.string "/" :: ByteParser BS.ByteString
+     path <- Combinators.manyTill Mega.anySingle (MegaByte.string " ") 
+     return $ (root <> BS.pack path)
+parseVersionResponse :: ByteParser BS.ByteString 
+parseVersionResponse = do 
+      version <- ((Mega.try (MegaByte.string "HTTP/1.1")) Mega.<|> (Mega.try $ MegaByte.string "HTTP/1.0"))  Mega.<|> (MegaByte.string "HTTP/2.0")
+      MegaByte.crlf 
+      return version
+
+   
+     
