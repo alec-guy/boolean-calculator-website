@@ -72,13 +72,23 @@ handleClient conn = do
   putStrLn "Msg received"
   case (parse Parser.parseHTTPRequest "" msg) of 
            Left e -> return () 
-           Right httpReq -> case Types.version httpReq of 
-                          "HTTP/1.1" -> putStrLn "I am dumb."
-                          "HTTP/2.0" -> putStrLn "I am dumb."
-                          "HTTP/1.0" -> putStrLn "I am dumb."
+           Right httpReq -> do 
+                             let version0 = Types.version httpReq 
+                                 method0  = Types.version httpReq 
+                                 path0    = Types.path httpReq 
+                                 pathCond = (path0 == acmeChallegne, path0 == pathToHTML)
+                             case (version0, method0 ) of 
+                              ("HTTP/1.1", "GET") -> if (fst pathCond || snd pathCond) 
+                                                     then makeHTTPResponse version0 method0 path0 
+                                                     else putStrLn "lmao , what do you want me to do with this shii boi ? XD"
+                              _                   -> do 
+                                                      putStrLn "I am too lazy for anything else" 
   BS.putStr msg
   SIO.hFlush SIO.stdout
   TLS.sendData context "Hello, client! "
   TLS.bye context 
   NS.close conn
+
+makeHTTPResponse version method path = undefined
+pathToHTML = undefined
 
