@@ -36,20 +36,31 @@ main = do
     (Right expr) -> do 
                   putStrLn "Successful parse"
                   putStrLn $ show $ Evaluator.evalBExpr expr
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "3000")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "80")
   let socketAddress = NS.addrAddress addr
-  port3000      <- NS.openSocket addr
-  NS.bind port3000 socketAddress 
-  NS.listen port3000 5
-  putStrLn "Server listening on port 3000"
+  port80      <- NS.openSocket addr
+  NS.bind port80 socketAddress 
+  NS.listen port80 5
+  putStrLn "Server listening on port 80"
   CM.forever $ do 
-    (conn, clientAddr) <- NS.accept port3000 
+    (conn, clientAddr) <- NS.accept port80 
     putStrLn $ "Connection accepted from: " ++ show clientAddr 
-    handleClient conn
+    msg <- NSB.recv port80 4096 
+    response <- handleAcmeChallenge acmeChallenge msg 
+    NSB.sendAllTo port80 response socketAddress 
 
 
 acmeChallenge :: String 
-acmeChallenge = "/.well-known/acme-challenge/LRN32Tz7blgmz3gpxqEjRcrjipSHRi-oYjpD5zAX7vU"
+acmeChallenge = "/.well-known/acme-challenge/CpbCfjbf5HyeUSb1EvXiocPKvPhQ2PEd1TVbKdB4UX4.Q7e7KzdLGANIhPoShOTCxcjlvMsKQU-PMeUCEBCSSuk"
+
+handleAcmeChallenge :: FilePath -> BS.ByteString -> IO BS.ByteString 
+handleAcmeChallenge a _ = do 
+          b <- BS.readFile acmeChallenge
+          let header1 = "Content-Type: text/plain\r\n"
+              fileSize = BS.pack $ stringToWord8 $ show $ BS.length b
+              header2 = "Content-Length: " <> fileSize <> "\r\n\r\n"
+              response = "HTTP/1.1 " <> "200 OK\r\n" <> header1 <> header2 <> b
+          return response 
 
 pathToHTML :: String 
 pathToHTML = "/.src/index.html"
@@ -79,9 +90,9 @@ handleClient conn = do
                              let version0 = Types.version httpReq 
                                  method0  = Types.version httpReq 
                                  path0    = Types.path httpReq 
-                                 pathCond = (path0 == (BS.pack $ stringToWord8 acmeChallenge), path0 == (BS.pack $ stringToWord8 pathToHTML))
+                                 pathCond = (False , path0 == (BS.pack $ stringToWord8 pathToHTML))
                              case (version0, method0 ) of 
-                              ("HTTP/1.1", "GET") -> if (fst pathCond || snd pathCond) 
+                              ("HTTP/1.1", "GET") -> if snd pathCond
                                                      then do 
                                                            response <- makeHTTPResponse version0 method0 path0 
                                                            TLS.sendData context (BS.fromStrict response) 
@@ -103,7 +114,4 @@ makeHTTPResponse version0 method0 path = do
                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
                 return $ version0 <> headers <> body0
       False -> do 
-                body0 <- BS.readFile acmeChallenge
-                let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
-                    headers = "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                return $ version0 <> headers <> body0
+                return BS.empty 
