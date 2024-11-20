@@ -21,15 +21,22 @@ import Data.Word
 import qualified Data.List.NonEmpty as NE
 import Data.Char (ord)
 import qualified System.Exit 
-import Control.Concurrent 
+import qualified Control.Concurrent as Concurrent
 
 
 
 main :: IO ()
 main = do
-  httpServer
-  httpsServer
+  _ <- Concurrent.forkIO $ safeServer httpServer 
+  _ <- Concurrent.forkIO $ safeServer httpsServer 
+  putStrLn "Servers are running.. Press Ctrl+C to stop."
+  CM.forever $ threadDelay maxBound
 
+safeServer :: IO () IO ()
+safeServer server = server `catch` \e -> do 
+     putStrLn $ "Server encountered an error: " ++ show (e :: SomeException)
+     safeServer server -- Restatrt the server
+  
 httpServer :: IO () 
 httpServer = do 
   putStrLn "HTTP server is running..."
