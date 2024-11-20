@@ -30,11 +30,11 @@ main = do
   _ <- Concurrent.forkIO $ safeServer httpServer 
   _ <- Concurrent.forkIO $ safeServer httpsServer 
   putStrLn "Servers are running.. Press Ctrl+C to stop."
-  CM.forever $ threadDelay maxBound
+  CM.forever $ Concurrent.threadDelay maxBound
 
-safeServer :: IO () IO ()
-safeServer server = server `catch` \e -> do 
-     putStrLn $ "Server encountered an error: " ++ show (e :: SomeException)
+safeServer :: IO () -> IO ()
+safeServer server = server `CE.catch` \e -> do 
+     putStrLn $ "Server encountered an error: " ++ show (e :: CE.SomeException)
      safeServer server -- Restatrt the server
   
 httpServer :: IO () 
