@@ -24,18 +24,14 @@ import qualified System.Exit
 
 
 
-stringToWord8 :: String -> [Word8]
-stringToWord8 = map (fromIntegral . ord)
-
 main :: IO ()
 main = do
-  putStrLn "Hello Haskell!"
-  i <- getLine 
-  case parse (Parser.parseExpression <* eof)  "" i  of 
-    (Left e) -> putStrLn $ errorBundlePretty e 
-    (Right expr) -> do 
-                  putStrLn "Successful parse"
-                  putStrLn $ show $ Evaluator.evalBExpr expr
+  httpServer
+  httpsServer
+
+httpServer :: IO () 
+httpServer = do 
+  putStrLn "HTTP server is running..."
   addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "80")
   let socketAddress = NS.addrAddress addr
   port80      <- NS.openSocket addr
@@ -45,65 +41,64 @@ main = do
   CM.forever $ do 
     (conn, clientAddr) <- NS.accept port80 
     putStrLn $ "Connection accepted from: " ++ show clientAddr 
-    msg <- NSB.recv port80 4096 
-    response <- handleAcmeChallenge acmeChallenge msg 
+    msg      <- Types.readUntil conn BS.empty 4096
+    response <- handleMsg msg 
     NSB.sendAllTo port80 response socketAddress 
 
-
-acmeChallenge :: String 
-acmeChallenge = "/.well-known/acme-challenge/CpbCfjbf5HyeUSb1EvXiocPKvPhQ2PEd1TVbKdB4UX4.Q7e7KzdLGANIhPoShOTCxcjlvMsKQU-PMeUCEBCSSuk"
-
-handleAcmeChallenge :: FilePath -> BS.ByteString -> IO BS.ByteString 
-handleAcmeChallenge a _ = do 
-          b <- BS.readFile acmeChallenge
-          let header1 = "Content-Type: text/plain\r\n"
-              fileSize = BS.pack $ stringToWord8 $ show $ BS.length b
-              header2 = "Content-Length: " <> fileSize <> "\r\n\r\n"
-              response = "HTTP/1.1 " <> "200 OK\r\n" <> header1 <> header2 <> b
-          return response 
-
-pathToHTML :: String 
-pathToHTML = "/.src/index.html"
-
-handleClient :: NS.Socket -> IO ()
-handleClient conn = do 
-  maybeCertificateStore <- readCertificateStore "C:/Users/alecb/certsTwo/cacert.pem"
-  maybeCredential       <- TLS.credentialLoadX509 "C:/Users/alecb/logicCalcPrivateKey/public.pem" "C:/Users/alecb/logicCalcPrivateKey/private.pem"
-  store                 <- (case maybeCertificateStore of
-                             Nothing     -> error "could not find certificate store"
-                             Just (store) ->  return store)
-  credential            <- (case maybeCredential of 
-                             Left s -> error s 
-                             Right c -> return c)
-  let 
-      myBackend      = Types.MyBackend {Types.mySockey = conn}
-      newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
-      newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
-      myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
-  context <- TLS.contextNew myBackend myParamsServer
-  TLS.handshake context 
-  msg <- TLS.recvData context 
-  putStrLn "Msg received"
-  case (parse Parser.parseHTTPRequest "" msg) of 
-           Left e -> return () 
-           Right httpReq -> do 
-                             let version0 = Types.version httpReq 
-                                 method0  = Types.version httpReq 
-                                 path0    = Types.path httpReq 
-                                 pathCond = (False , path0 == (BS.pack $ stringToWord8 pathToHTML))
-                             case (version0, method0 ) of 
-                              ("HTTP/1.1", "GET") -> if snd pathCond
-                                                     then do 
-                                                           response <- makeHTTPResponse version0 method0 path0 
-                                                           TLS.sendData context (BS.fromStrict response) 
-                                                     else putStrLn "lmao , what do you want me to do with this shii boi ? XD"
-                              _                   -> do 
-                                                      putStrLn "I am too lazy for anything else" 
-  BS.putStr msg
-  SIO.hFlush SIO.stdout
-  TLS.sendData context "Hello, client! "
+httpsServer :: IO ()
+httpsServer = do 
+  putStrLn "HTTPS server is running..."
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Nothing) (Just "443")
+  let socketAddress = NS.addrAddress addr
+  port443      <- NS.openSocket addr
+  NS.bind port443 socketAddress 
+  NS.listen port443 5
+  putStrLn "Server listening on port 80"
+  CM.forever $ do 
+    (conn, clientAddr) <- NS.accept port443 
+    putStrLn $ "Connection accepted from: " ++ show clientAddr 
+    maybeCertificateStore <- readCertificateStore "C:/Users/alecb/certsTwo/cacert.pem"
+    maybeCredential       <- TLS.credentialLoadX509 "C:/Users/alecb/logicCalcPrivateKey/public.pem" "C:/Users/alecb/logicCalcPrivateKey/private.pem"
+    store                 <- (case maybeCertificateStore of
+                              Nothing     -> error "could not find certificate store"
+                              Just (store) ->  return store)
+    credential            <- (case maybeCredential of 
+                              Left s -> error s 
+                              Right c -> return c)
+    let myBackend      = Types.MyBackend {Types.mySockey = conn}
+        newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
+        newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
+        myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
+    context <- TLS.contextNew myBackend myParamsServer
+    TLS.handshake context 
+    msg      <- TLS.recvData context 
+    response <- handleMsg msg 
+    TLS.sendData context response 
   TLS.bye context 
   NS.close conn
+
+--------------------------------------------------------------------------------------
+----        HELPER        STUFF BECAUSE THE GUYS AT THE TOP ARE NOT STRONG ENOUGH I GUESS  -----------------
+
+handleMsg :: BS.ByteString -> IO ()
+handleMsg msg = do 
+  case (parse Parser.parseHTTPRequest "" msg) of 
+    Left e -> do  
+               putStrLn "Error parsing message..."
+               putStrLn $ errorBundlePretty e 
+               putStr "Message: "
+               SIO.hFlush stdout 
+               BS.putStr msg 
+               hFlush stdout 
+    Right httpReq -> do 
+                      let version0 = Types.version httpReq 
+                      method0  = Types.version httpReq 
+                      path0    = Types.path httpReq 
+                      case (version0, method0 ) of 
+                        ("HTTP/1.1", "GET") -> do 
+                                      response <- makeHTTPResponse version0 method0 path0 
+                                      TLS.sendData context (BS.fromStrict response) 
+                        _                   -> do putStrLn "Somebody sent something weird..."
 
 makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
 makeHTTPResponse version0 method0 path = do 
@@ -113,5 +108,10 @@ makeHTTPResponse version0 method0 path = do
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
                 return $ version0 <> headers <> body0
-      False -> do 
-                return BS.empty 
+      False -> return BS.empty 
+
+stringToWord8 :: String -> [Word8]
+stringToWord8 = map (fromIntegral . ord)
+
+pathToHTML :: String 
+pathToHTML = "/.src/index.html"
