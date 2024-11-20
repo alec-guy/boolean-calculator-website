@@ -130,7 +130,7 @@ makeHTTPResponse version0 method0 path = do
                 body0 <- BS.readFile pathToHTML
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                return $ version0 <> headers <> body0
+                return $ version0 <>  " 200 OK \r\n" <> headers <> body0
       False -> case maybeAcmeChallenge of 
                 Nothing -> return BS.empty 
                 (Just token) -> do 
@@ -138,7 +138,7 @@ makeHTTPResponse version0 method0 path = do
                                                  (Types.Token b) -> b
                                      fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0 
                                      headers =  "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                                 return $ version0 <> headers <> body0 
+                                 return $ version0 <> " 200 OK \r\n" <> headers <> body0 
 
 
 stringToWord8 :: String -> [Word8]
