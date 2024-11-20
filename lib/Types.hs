@@ -74,6 +74,7 @@ data HTTPRequest = HTTPRequest
     , headers :: Headers 
     , maybeBody :: Maybe BS.ByteString -- usually empty for get
     }
+    deriving (Show, Eq)
 
 instance TLS.HasBackend MyBackend where
     initializeBackend mb = return ()

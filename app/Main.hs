@@ -20,6 +20,7 @@ import qualified Data.ByteString as BS
 import Data.Word 
 import qualified Data.List.NonEmpty as NE
 import Data.Char (ord)
+import qualified System.Exit 
 
 
 
@@ -69,9 +70,12 @@ handleClient conn = do
   TLS.handshake context 
   msg <- TLS.recvData context 
   putStrLn "Msg received"
-  http <- case (parse Parser.parseHTTPRequest "" msg) of 
+  case (parse Parser.parseHTTPRequest "" msg) of 
            Left e -> return () 
-           Right ht -> 
+           Right httpReq -> case Types.version httpReq of 
+                          "HTTP/1.1" -> putStrLn "I am dumb."
+                          "HTTP/2.0" -> putStrLn "I am dumb."
+                          "HTTP/1.0" -> putStrLn "I am dumb."
   BS.putStr msg
   SIO.hFlush SIO.stdout
   TLS.sendData context "Hello, client! "

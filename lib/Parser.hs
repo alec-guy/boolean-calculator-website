@@ -16,7 +16,6 @@ import qualified Control.Monad as CM
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString as BS
 import Data.Char (ord)
-import Data.Char (GeneralCategory(LetterNumber))
 import Data.Word
 
 
