@@ -61,7 +61,7 @@ httpsServer = do
   port443      <- NS.openSocket addr
   NS.bind port443 socketAddress 
   NS.listen port443 5
-  putStrLn "Server listening on port 80"
+  putStrLn "Server listening on port 443"
   CM.forever $ do 
     (conn, clientAddr) <- NS.accept port443 
     putStrLn $ "Connection accepted from: " ++ show clientAddr 
