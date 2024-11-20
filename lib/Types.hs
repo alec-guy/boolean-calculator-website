@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Types where 
 
 import qualified Network.Socket as NS
@@ -5,6 +7,7 @@ import qualified Network.Socket.ByteString as NSB
 import qualified Network.TLS as TLS
 import qualified Data.ByteString as BS
 import qualified Data.Map.Strict as Map
+import qualified Control.Monad as CM
 
 {-
 data BooleanOperation = Binary (BoolChar -> BoolChar -> Bool)
@@ -95,13 +98,10 @@ instance TLS.HasBackend MyBackend where
                    }
    
 readUntil :: NS.Socket -> BS.ByteString -> Int -> IO BS.ByteString 
-readUntil socky dataSoFar i = do 
-    chunk <- NSB.recv socky i 
-    case BS.null chunk of 
-       True -> return dataSoFar 
-       False -> do 
-          let  x              = dataSoFar <> chunk
-               remainingBytes = i - (BS.length x)
-          case remainingBytes <= 0 of 
-            True  -> return $ x 
-            False -> readUntil socky x remainingBytes
+readUntil socky oldBytes lengthOfRemainingBytes = do 
+    newBytes <- NSB.recv socky lengthOfRemainingBytes 
+    let  oldPlusNew   = oldBytes <> newBytes
+         newLengthOfRemainingBytes = lengthOfRemainingBytes - (BS.length oldPlusNew)
+    case newLengthOfRemainingBytes <= 0 of 
+      True  -> return $ oldPlusNew 
+      False -> readUntil socky oldPlusNew newLengthOfRemainingBytes
