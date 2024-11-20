@@ -42,11 +42,14 @@ safeServer :: IO () -> IO ()
 safeServer server = server `CE.catch` \e -> do 
      putStrLn $ "Server encountered an error: " ++ show (e :: CE.SomeException)
      safeServer server -- Restatrt the server
-  
+
+ hostName :: BS.ByteString 
+ hostName = "localhost:8001"
+
 httpServer :: IO () 
 httpServer = do 
   putStrLn "HTTP server is running..."
-  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just "localhost") (Just "8001")
+  addr                  <-  NE.head <$> NS.getAddrInfo (Just NS.defaultHints) (Just hostName) (Just "8001")
   let socketAddress = NS.addrAddress addr
   port      <- NS.openSocket addr
   NS.setSocketOption port NS.ReuseAddr 1
@@ -128,15 +131,15 @@ handleMsg msg = do
       putStrLn $ show $ httpReq 
       SIO.hFlush SIO.stdout
 
-      case (version0, method0, BS.isInfixOf "localhost:8001" $ fromJust maybeHost) of
+      case (version0, method0, BS.isInfixOf hostName $ fromJust maybeHost) of
         ("HTTP/1.1", "GET", True) -> do 
                     putStrLn "Making httpResponse, found version and method"
                     response <- makeHTTPResponse version0 method0 path0
                     return response
 
-        _ -> do 
-              putStrLn "Returning empty because either HTTP or GET or host is wrong but I can't say witch."
-              return BS.empty
+        (_, _ , False) -> do 
+                    putStrLn "Making httpResponse, did not find host name"
+                    response <- makeHTTPResponse version0 method0 path0
 
 
 makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
@@ -145,13 +148,12 @@ makeHTTPResponse version0 method0 path = do
         maybeAcmeChallenge = parseMaybe Parser.parseToken path
     case path == "/" of  
       True ->  do 
-                putStrLn "I got this far"
                 body0 <- BS.readFile pathToHTML 
+                putStrLn "Successfuly read HTML file and now going to send it."
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
                 return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers <> body0
       False -> do 
-                putStrLn "Failed failed failed"
                 case maybeAcmeChallenge of 
                  Nothing -> return BS.empty 
                  (Just token) -> do 
