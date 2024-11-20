@@ -48,9 +48,12 @@ main = do
     handleClient conn
 
 
-acmeChallegne :: BS.ByteString 
-acmeChallegne = "/.well-known/acme-challenge/LRN32Tz7blgmz3gpxqEjRcrjipSHRi-oYjpD5zAX7vU"
-  
+acmeChallenge :: String 
+acmeChallenge = "/.well-known/acme-challenge/LRN32Tz7blgmz3gpxqEjRcrjipSHRi-oYjpD5zAX7vU"
+
+pathToHTML :: String 
+pathToHTML = "/.src/index.html"
+
 handleClient :: NS.Socket -> IO ()
 handleClient conn = do 
   maybeCertificateStore <- readCertificateStore "C:/Users/alecb/certsTwo/cacert.pem"
@@ -76,10 +79,12 @@ handleClient conn = do
                              let version0 = Types.version httpReq 
                                  method0  = Types.version httpReq 
                                  path0    = Types.path httpReq 
-                                 pathCond = (path0 == acmeChallegne, path0 == pathToHTML)
+                                 pathCond = (path0 == (BS.pack $ stringToWord8 acmeChallenge), path0 == (BS.pack $ stringToWord8 pathToHTML))
                              case (version0, method0 ) of 
                               ("HTTP/1.1", "GET") -> if (fst pathCond || snd pathCond) 
-                                                     then makeHTTPResponse version0 method0 path0 
+                                                     then do 
+                                                           response <- makeHTTPResponse version0 method0 path0 
+                                                           TLS.sendData context (BS.fromStrict response) 
                                                      else putStrLn "lmao , what do you want me to do with this shii boi ? XD"
                               _                   -> do 
                                                       putStrLn "I am too lazy for anything else" 
@@ -89,6 +94,16 @@ handleClient conn = do
   TLS.bye context 
   NS.close conn
 
-makeHTTPResponse version method path = undefined
-pathToHTML = undefined
-
+makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
+makeHTTPResponse version0 method0 path = do 
+    case path == (BS.pack $ stringToWord8 pathToHTML) of 
+      True ->  do 
+                body0 <- BS.readFile pathToHTML
+                let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
+                    headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                return $ version0 <> headers <> body0
+      False -> do 
+                body0 <- BS.readFile acmeChallenge
+                let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
+                    headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                return $ version0 <> headers <> body0

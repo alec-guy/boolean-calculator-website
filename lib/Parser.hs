@@ -178,7 +178,7 @@ parseHTTPRequest = do
                   ,Types.maybeBody = maybeBody0
                   }
            where parseMaybeBody = do 
-                      e <- Combinators.eitherP (MegaByte.crlf) (return ())
+                      e <- Combinators.eitherP (MegaByte.crlf >> MegaByte.crlf) (return ())
                       case e of 
                         Left _ -> return Nothing 
                         Right l -> do 
