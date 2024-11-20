@@ -144,14 +144,15 @@ makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.Byt
 makeHTTPResponse version0 method0 path = do 
     let bsPath s = BS.pack $ stringToWord8 s
         maybeAcmeChallenge = parseMaybe Parser.parseToken path
-    case path == "/" of  
-      True ->  do 
+    case path of 
+      "/"   ->  do 
                 body0 <- BS.readFile pathToHTML 
                 putStrLn "Successfuly read HTML file and now going to send it."
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
                 return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers <> body0
-      False -> do 
+      "/elmJson" -> 
+      _          -> do 
                 case maybeAcmeChallenge of 
                  Nothing -> return BS.empty 
                  (Just token) -> do 

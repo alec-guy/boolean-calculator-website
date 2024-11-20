@@ -74,7 +74,7 @@ viewServerResponse model =
 getServerResponse : Cmd Msg 
 getServerResponse = 
     Http.get 
-    { url = "https://localhost/3000"
+    { url = "/elmJSON"
     , expect = Http.expectJson GotResult resultDecoder
     }
 

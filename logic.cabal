@@ -74,7 +74,8 @@ executable logic
                       tls ^>= 2.1.5,
                       bytestring ^>= 0.12.1.0,
                       containers ^>= 0.7,
-                      crypton-x509-store ^>= 1.6.9
+                      crypton-x509-store ^>= 1.6.9,
+                      aeson ^>= 2.2.3.0
 
 
 
