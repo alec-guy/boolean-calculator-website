@@ -115,8 +115,8 @@ parseHeaders = do
                     where parseKey :: ByteParser BS.ByteString
                           parseKey = do
                                wordsBeforeColon <-  Mega.takeWhileP (Just "key") (\c -> c /= (fromIntegral . ord $ ':'))
-                               colon            <-  MegaByte.string ":"
-                               let key = BS.concat [wordsBeforeColon, colon]
+                               _            <-  MegaByte.string ":"
+                               let key = wordsBeforeColon
                                return $ key
           parseTypicalValue :: ByteParser BS.ByteString
           parseTypicalValue = do

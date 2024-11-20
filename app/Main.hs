@@ -2,6 +2,8 @@
 
 module Main where
 
+import qualified Control.Concurrent as Concurrent
+import qualified System.Exit 
 import qualified Types as Types 
 import qualified System.IO as SIO
 import qualified Control.Exception as CE
@@ -19,9 +21,10 @@ import Data.X509.CertificateStore
 import qualified Data.ByteString as BS
 import Data.Word 
 import qualified Data.List.NonEmpty as NE
+import qualified Data.Map.Strict as Map
 import Data.Char (ord)
-import qualified System.Exit 
-import qualified Control.Concurrent as Concurrent
+import Data.Maybe (fromJust)
+
 
 
 
@@ -89,31 +92,40 @@ httpsServer = do
 ----        HELPER        STUFF BECAUSE THE GUYS AT THE TOP ARE NOT STRONG ENOUGH I GUESS  -----------------
 
 handleMsg :: BS.ByteString -> IO BS.ByteString
-handleMsg msg = do 
-  case (parse Parser.parseHTTPRequest "" msg) of 
-    Left e -> do  
-               putStrLn "Error parsing message..."
-               putStrLn $ errorBundlePretty e 
-               putStr "Message: "
-               SIO.hFlush SIO.stdout 
-               BS.putStr msg 
-               SIO.hFlush SIO.stdout
-               return BS.empty  
-    Right httpReq -> do 
-                      let version0 = Types.version httpReq 
-                          method0  = Types.version httpReq 
-                          path0    = Types.path httpReq 
-                      case (version0, method0 ) of 
-                        ("HTTP/1.1", "GET") -> do 
-                                      response <- makeHTTPResponse version0 method0 path0 
-                                      return response 
-                        _                   -> return BS.empty 
+handleMsg msg = do
+  case parse Parser.parseHTTPRequest "" msg of
+    Left e -> do
+      putStrLn "Error parsing message..."
+      putStrLn $ errorBundlePretty e
+      putStr "Message: "
+      SIO.hFlush SIO.stdout
+      BS.putStr msg
+      SIO.hFlush SIO.stdout
+      return BS.empty
+
+    Right httpReq -> do
+      let version0   = Types.version httpReq
+          method0    = Types.version httpReq
+          path0      = Types.path httpReq
+          maybeHost  = Map.lookup "Host" $ Types.pairs $ Types.headers httpReq
+
+      case (version0, method0) of
+        ("HTTP/1.1", "GET") ->
+          if maybeHost == Nothing
+            then return BS.empty
+            else case fromJust maybeHost of
+              "www.logiccalculator.com" -> do
+                response <- makeHTTPResponse version0 method0 path0
+                return response
+              _ -> return BS.empty
+        _ -> return BS.empty
+
 
 makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
 makeHTTPResponse version0 method0 path = do 
     let bsPath s = BS.pack $ stringToWord8 s
         maybeAcmeChallenge = parseMaybe Parser.parseToken path
-    case path == (bsPath pathToHTML)  of 
+    case path == "/" of  
       True ->  do 
                 body0 <- BS.readFile pathToHTML
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
