@@ -163,6 +163,15 @@ parseStatusLine = do
 
 
 --- 
+parseToken :: ByteParser Types.Token 
+parseToken = do 
+        let acmeChallenge = (MegaByte.string "acme-challenge") >> Mega.anySingle
+        _      <- Combinators.skipManyTill Mega.anySingle acmeChallenge 
+        _      <- acmeChallenge
+        token  <- Combinators.manyTill Mega.anySingle (MegaByte.string " ")
+        return $ Types.Token $ BS.pack token
+  -- FOR ACME CHALLENGE
+      
 parseHTTPRequest :: ByteParser Types.HTTPRequest
 parseHTTPRequest = do 
            method0    <- parseMethod 

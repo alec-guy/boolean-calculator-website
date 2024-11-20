@@ -7,7 +7,7 @@ import qualified System.IO as SIO
 import qualified Control.Exception as CE
 import qualified Parser as Parser 
 import qualified Evaluator as Evaluator
-import Text.Megaparsec (parse, eof)
+import Text.Megaparsec (parse, eof, parseMaybe)
 import Text.Megaparsec.Error 
 import Control.Applicative ((<*))
 import qualified Control.Monad as CM
@@ -111,13 +111,23 @@ handleMsg msg = do
 
 makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
 makeHTTPResponse version0 method0 path = do 
-    case path == (BS.pack $ stringToWord8 pathToHTML) of 
+    let bsPath s = BS.pack $ stringToWord8 s
+        maybeAcmeChallenge = parseMaybe Parser.parseToken path
+    case path == (bsPath pathToHTML)  of 
       True ->  do 
                 body0 <- BS.readFile pathToHTML
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
                 return $ version0 <> headers <> body0
-      False -> return BS.empty 
+      False -> case maybeAcmeChallenge of 
+                Nothing -> return BS.empty 
+                (Just token) -> do 
+                                 let body0    = case token of 
+                                                 (Types.Token b) -> b
+                                     fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0 
+                                     headers =  "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                                 return $ version0 <> headers <> body0 
+
 
 stringToWord8 :: String -> [Word8]
 stringToWord8 = map (fromIntegral . ord)

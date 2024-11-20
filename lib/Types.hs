@@ -73,8 +73,11 @@ data HTTPRequest = HTTPRequest
     , version :: BS.ByteString      -- e.g., "http/1.1"
     , headers :: Headers 
     , maybeBody :: Maybe BS.ByteString -- usually empty for get
-    }
-    deriving (Show, Eq)
+    } deriving (Show, Eq)
+
+newtype Token = Token BS.ByteString deriving (Show, Eq) -- for ACME challenge 
+
+
 
 instance TLS.HasBackend MyBackend where
     initializeBackend mb = return ()
