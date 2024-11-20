@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Main where
 
@@ -24,7 +25,20 @@ import qualified Data.List.NonEmpty as NE
 import qualified Data.Map.Strict as Map
 import Data.Char (ord)
 import Data.Maybe (fromJust)
+import Data.Aeson
+import GHC.Generics
 
+
+data ParseErrorOrEvaluation = ParseErrorOrEvaluation
+                            {parseError :: String 
+                            ,evaluation :: String 
+                            } deriving (Generic,Show)
+instance ToJSON ParseErrorOrEvaluation where 
+   -- No need to provide a toJSON implementation.. 
+   toEncoding = genericToEncoding defaultOptions 
+  
+instance FromJSON ParseErrorOrEvaluation 
+      -- no need to provide a parseJSON implementation. 
 
 
 
@@ -146,16 +160,16 @@ makeHTTPResponse version0 method0 path = do
         maybeAcmeChallenge = parseMaybe Parser.parseToken path
     case path of 
       "/"   ->  do 
-                body0 <- BS.readFile pathToHTML 
-                putStrLn "Successfuly read HTML file and now going to send it."
-                let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
-                    headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers <> body0
-      "/elmJson" -> 
+                 body0 <- BS.readFile pathToHTML 
+                 putStrLn "Successfuly read HTML file and now going to send it."
+                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
+                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                 return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers <> body0
+      "/elmJson" -> return BS.empty 
       _          -> do 
-                case maybeAcmeChallenge of 
-                 Nothing -> return BS.empty 
-                 (Just token) -> do 
+                     case maybeAcmeChallenge of 
+                      Nothing -> return BS.empty 
+                      (Just token) -> do 
                                  let body0    = case token of 
                                                  (Types.Token b) -> b
                                      fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0 

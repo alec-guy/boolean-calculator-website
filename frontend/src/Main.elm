@@ -19,6 +19,7 @@ type Model = Failure
            | Loading 
            | Success ServerResponse
 
+
 type alias ServerResponse = 
       { parseError : String 
       , evaluation : String 
@@ -47,8 +48,15 @@ view model =
   div [] 
   [h2 [] [text "Logic Calcluator"]
   ,viewServerResponse model 
+  ,ourTextArea model 
   ]
 
+ourTextArea : Model -> Html Msg 
+ourTextArea model = textarea
+              [
+              ]
+              [i [] [text "Enter here..."]
+              ]
 
 viewServerResponse : Model -> Html Msg 
 viewServerResponse model = 
