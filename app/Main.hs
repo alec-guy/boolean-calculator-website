@@ -105,5 +105,5 @@ makeHTTPResponse version0 method0 path = do
       False -> do 
                 body0 <- BS.readFile acmeChallenge
                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
-                    headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                    headers = "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
                 return $ version0 <> headers <> body0
