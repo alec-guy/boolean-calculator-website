@@ -130,9 +130,7 @@ handleMsg msg = do
     Right httpReq -> do
       let version0   = Types.version httpReq 
           method0    = Types.method httpReq
-          path0      = Types.path httpReq
-          maybeHost  = Map.lookup "Host" $ Types.pairs $ Types.headers httpReq
-      putStr "Message: "
+      putStr "HTTP request: "
       SIO.hFlush SIO.stdout
       putStrLn $ show $ httpReq 
       SIO.hFlush SIO.stdout
@@ -149,37 +147,20 @@ handleMsg msg = do
         _                    -> do putStrLn "I am stupid" >> return BS.empty
 
 makeHTTPResponse :: Types.HTTPRequest -> IO BS.ByteString
-makeHTTPResponse http = do 
-    let bsPath s = BS.pack $ stringToWord8 s
-        maybeAcmeChallenge = parseMaybe Parser.parseToken (Types.path http)
-    case (Types.path http) of 
-      "/"   ->  do 
-                 body0 <- BS.readFile pathToHTML 
-                 putStrLn "Successfuly read HTML file and now going to send it."
-                 let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
-                     headers0 = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                 return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers0 <> body0
-      "/upload"  ->  case parse Parser.parseExpression "" (show $ fromJust $ Types.maybeBody http) of 
-                         Left pe      ->  do 
-                              let fileSize = BS.pack $ stringToWord8 $ show $ length $ errorBundlePretty pe 
-                                  headers0 = "Content-Type: application/json; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                              return $ "HTTP/1.1" <> " 200 Ok\r\n" <> headers0 <> (BS.toStrict $ encode $ JsonR {parseError = errorBundlePretty pe, evaluation = ""})
-                         Right result ->  do 
-                                   let headers0 = "Content-Type: application/json; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                                       evaledResult = show $ Evaluator.evalBExpr result
-                                       fileSize = BS.pack $ stringToWord8 $ show $ length $ evaledResult 
-                                   return $ "HTTP/1.1" <> " 200 Ok\r\n" <> headers0 <> (BS.toStrict $ encode $ JsonR {parseError = "", evaluation = evaledResult})
-                    
-      _          ->  case maybeAcmeChallenge of 
-                       Nothing -> return BS.empty 
-                       (Just token) -> do 
-                                 let body0    = case token of 
-                                                 (Types.Token b) -> b
-                                     fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0 
-                                     headers0 =  "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                                 return $ (Types.version http) <> " 200 OK \r\n" <> headers0 <> body0 
-
-
+makeHTTPResponse httpreq = 
+      case (Types.path httpreq) of 
+       "/" -> do 
+               html <- BS.readFile pathToHTML
+               let contentLength = BS.length html 
+               return $ 
+                 (Types.version httpreq) <>  
+                 " ok 200\r\n" <> 
+                 "Content: text/html\r\nContent-Length: " <>
+                 (BS.pack $ stringToWord8 $ show contentLength)  <>
+                 "\r\n\r\n" <>
+                 html 
+       _  -> do putStrLn "can't respond to anything else for now"
+                return BS.empty 
 stringToWord8 :: String -> [Word8]
 stringToWord8 = map (fromIntegral . ord)
 
