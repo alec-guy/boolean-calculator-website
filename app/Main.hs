@@ -10,9 +10,11 @@ import qualified System.IO as SIO
 import qualified Control.Exception as CE
 import qualified Parser as Parser 
 import qualified Evaluator as Evaluator
-import Text.Megaparsec (parse, eof, parseMaybe)
+import Text.Megaparsec hiding (parseError)
+import qualified Text.Megaparsec.Byte as MegaByte
+import qualified Control.Monad.Combinators as Combinators
 import Text.Megaparsec.Error 
-import Control.Applicative ((<*))
+import Control.Applicative ((<*), (*>))
 import qualified Control.Monad as CM
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
@@ -71,21 +73,12 @@ httpServer = do
   CM.forever $ do 
     (conn, clientAddr) <- NS.accept port 
     putStrLn $ "HTTP Connection accepted from: " ++ show clientAddr 
-    msg      <- recvHTTP conn BS.empty 
+    msg <- NSB.recv conn 4096
     response <- handleMsg msg 
     NSB.sendAll conn response 
     putStrLn "Sent it to connection. " 
     NS.close conn
-  
-recvHTTP :: NS.Socket -> BS.ByteString -> IO BS.ByteString 
-recvHTTP s oldBytes = do 
-      newBytes <- NSB.recv s 4096
-      let oldPlusNew = oldBytes <> newBytes  
-      case BS.isInfixOf "\r\n\r\n" oldPlusNew of 
-        True -> return oldPlusNew
-        False -> recvHTTP s oldPlusNew 
 
-  
 httpsServer :: IO ()
 httpsServer = do 
   putStrLn "HTTPS server is running..."
@@ -144,15 +137,16 @@ handleMsg msg = do
       putStrLn $ show $ httpReq 
       SIO.hFlush SIO.stdout
 
-      case (version0, method0, BS.isInfixOf hostName $ fromJust maybeHost) of
-        ("HTTP/1.1", "GET", True) -> do 
+      case (version0, method0) of
+        ("HTTP/1.1", "GET") -> do 
                     putStrLn "Making httpResponse, found version and method"
                     response <- makeHTTPResponse httpReq 
                     return response
 
-        (_, _ , False) -> do 
-                    putStrLn "Making httpResponse, did not find host name"
-                    return BS.empty 
+        ("HTTP/1.1", "POST") -> do 
+                    response <- makeHTTPResponse httpReq
+                    return response
+        _                    -> do putStrLn "I am stupid" >> return BS.empty
 
 makeHTTPResponse :: Types.HTTPRequest -> IO BS.ByteString
 makeHTTPResponse http = do 
