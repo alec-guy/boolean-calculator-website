@@ -59,7 +59,6 @@ view model =
   div [] 
   [h2 [] [text "Logic Calcluator"]
   ,viewServerResponse model 
-  ,ourTextArea model
   ]
 
 ourTextArea : Model -> Html Msg 
@@ -71,31 +70,39 @@ ourTextArea model =
                 [i [] [text "Enter here..."]
 
                 ]
-              , button [onClick Post] [text model.textInput]
-              ]
-
+              , br [] []
+              , button [onClick Post] [text "Submit"]
+              ]   
+      
 viewServerResponse : Model -> Html Msg 
 viewServerResponse model = 
-   case model.failure of 
-    True -> 
-      div [] 
-      [ text "I could not get a server response"
-      ]
-    False -> case model.loading of 
-              True -> text "Loading"
-              False -> case model.success of 
-                        (Just serverResponse) -> case serverResponse.evaluation of 
-                                                  "" ->  div []
-                                                         [ blockquote [] [text serverResponse.parseError]
-                                                         ]
-                                                  t  ->  div []
-                                                         [blockquote [] [text t]
-                                                         ]
-
-                        Nothing ->                       div []
-                                                         [blockquote [] [text "Nothing yet"]
-                                                         ]
-
+   case model.success of 
+    Nothing -> div 
+               []
+               [case model.loading of 
+                 True  -> text "Loading"
+                 False -> text ""
+               ,ourTextArea model  
+               ]
+    (Just s) -> case s.evaluation of 
+                 "Nothing" -> div 
+                              []
+                              [ case model.loading of 
+                                 True -> text "Loading"
+                                 False -> text ""
+                              ,ourTextArea model 
+                              ,br [] []
+                              ,text s.parseError 
+                              ]
+                 _         -> div 
+                              []
+                              [case model.loading of 
+                                True  -> text "Loading"
+                                False -> text ""
+                              ,ourTextArea model
+                              , br [] []
+                              ,text s.evaluation
+                              ]
 postRequest : String -> Cmd Msg 
 postRequest s = 
    Http.post 

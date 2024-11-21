@@ -17,6 +17,7 @@ import qualified Data.Map.Strict as Map
 import qualified Data.ByteString as BS
 import Data.Char (ord)
 import Data.Word
+import Control.Applicative ((<*))
 
 
 
@@ -58,7 +59,8 @@ parseTerm = do
 
 parseExpression :: Parser (Types.Expression Bool Bool)
 parseExpression = do 
-    myLexemeWrapper $ Expr.makeExprParser parseTerm table 
+    expr <- (myLexemeWrapper $ Expr.makeExprParser parseTerm table)
+    return expr
     where   table = [ [prefix ["~"] (Types.One Types.norChar)
                     ,prefix ["+"] (Types.One Types.idChar)
                     ]

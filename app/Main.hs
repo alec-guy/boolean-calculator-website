@@ -129,22 +129,18 @@ handleMsg msg = do
 
     Right httpReq -> do
       let version0   = Types.version httpReq 
-          method0    = Types.method httpReq
       putStr "HTTP request: "
       SIO.hFlush SIO.stdout
       putStrLn $ show $ httpReq 
       SIO.hFlush SIO.stdout
 
-      case (version0, method0) of
-        ("HTTP/1.1", "GET") -> do 
+      case version0 of
+        "HTTP/1.1" -> do 
                     putStrLn "Making httpResponse, found version and method"
                     response <- makeHTTPResponse httpReq 
                     return response
 
-        ("HTTP/1.1", "POST") -> do 
-                    response <- makeHTTPResponse httpReq
-                    return response
-        _                    -> do putStrLn "I am stupid" >> return BS.empty
+        _         -> do putStrLn "I am stupid" >> return BS.empty
 
 makeHTTPResponse :: Types.HTTPRequest -> IO BS.ByteString
 makeHTTPResponse httpreq = 
@@ -154,13 +150,40 @@ makeHTTPResponse httpreq =
                let contentLength = BS.length html 
                return $ 
                  (Types.version httpreq) <>  
-                 " ok 200\r\n" <> 
+                 " 200 OK\r\n" <> 
                  "Content: text/html\r\nContent-Length: " <>
                  (BS.pack $ stringToWord8 $ show contentLength)  <>
-                 "\r\n\r\n" <>
+                 "\r\n\r\n" <> 
                  html 
-       _  -> do putStrLn "can't respond to anything else for now"
-                return BS.empty 
+       "/upload" -> do 
+                     let httpreqBody = case Types.maybeBody httpreq of 
+                                        Nothing  -> ""
+                                        (Just b) -> b
+                         jsonR = case parse Parser.parseExpression "" (show httpreqBody) of 
+                                  Left e -> JsonR {parseError  = errorBundlePretty e 
+                                                  ,evaluation = "Nothing"
+                                                  }
+                                  Right expr -> let evaluated = Evaluator.evalBExpr expr 
+                                                in JsonR {parseError = ""
+                                                         ,evaluation = show evaluated
+                                                         }
+                         encodedJson  = BS.toStrict $ encode jsonR 
+                         contentLength = BS.length encodedJson
+                         response      = (Types.version httpreq) <>  
+                                           " 200 OK\r\n" <> 
+                                           "Content: application/json\r\nContent-Length: " <>
+                                           (BS.pack $ stringToWord8 $ show contentLength)  <>
+                                           "\r\n\r\n" <>
+                                           encodedJson
+                     
+                     BS.putStr response 
+                     SIO.hFlush SIO.stdout 
+                     return $ response 
+   
+       _         -> return $ 
+                     (Types.version httpreq) <> 
+                     " 404 Not Found\r\n\r\n"
+
 stringToWord8 :: String -> [Word8]
 stringToWord8 = map (fromIntegral . ord)
 

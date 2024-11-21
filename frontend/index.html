@@ -6206,6 +6206,9 @@ var $author$project$Main$update = F2(
 	});
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $author$project$Main$Post = {$: 'Post'};
 var $author$project$Main$TextInput = function (a) {
 	return {$: 'TextInput', a: a};
@@ -6260,8 +6263,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $author$project$Main$ourTextArea = function (model) {
 	return A2(
@@ -6285,6 +6286,7 @@ var $author$project$Main$ourTextArea = function (model) {
 								$elm$html$Html$text('Enter here...')
 							]))
 					])),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
 				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
@@ -6293,75 +6295,67 @@ var $author$project$Main$ourTextArea = function (model) {
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text(model.textInput)
+						$elm$html$Html$text('Submit')
 					]))
 			]));
 };
-var $elm$html$Html$blockquote = _VirtualDom_node('blockquote');
 var $author$project$Main$viewServerResponse = function (model) {
-	var _v0 = model.failure;
-	if (_v0) {
+	var _v0 = model.success;
+	if (_v0.$ === 'Nothing') {
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			_List_fromArray(
 				[
-					$elm$html$Html$text('I could not get a server response')
+					function () {
+					var _v1 = model.loading;
+					if (_v1) {
+						return $elm$html$Html$text('Loading');
+					} else {
+						return $elm$html$Html$text('');
+					}
+				}(),
+					$author$project$Main$ourTextArea(model)
 				]));
 	} else {
-		var _v1 = model.loading;
-		if (_v1) {
-			return $elm$html$Html$text('Loading');
+		var s = _v0.a;
+		var _v2 = s.evaluation;
+		if (_v2 === 'Nothing') {
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						function () {
+						var _v3 = model.loading;
+						if (_v3) {
+							return $elm$html$Html$text('Loading');
+						} else {
+							return $elm$html$Html$text('');
+						}
+					}(),
+						$author$project$Main$ourTextArea(model),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						$elm$html$Html$text(s.parseError)
+					]));
 		} else {
-			var _v2 = model.success;
-			if (_v2.$ === 'Just') {
-				var serverResponse = _v2.a;
-				var _v3 = serverResponse.evaluation;
-				if (_v3 === '') {
-					return A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$blockquote,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text(serverResponse.parseError)
-									]))
-							]));
-				} else {
-					var t = _v3;
-					return A2(
-						$elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$blockquote,
-								_List_Nil,
-								_List_fromArray(
-									[
-										$elm$html$Html$text(t)
-									]))
-							]));
-				}
-			} else {
-				return A2(
-					$elm$html$Html$div,
-					_List_Nil,
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$blockquote,
-							_List_Nil,
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Nothing yet')
-								]))
-						]));
-			}
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						function () {
+						var _v4 = model.loading;
+						if (_v4) {
+							return $elm$html$Html$text('Loading');
+						} else {
+							return $elm$html$Html$text('');
+						}
+					}(),
+						$author$project$Main$ourTextArea(model),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						$elm$html$Html$text(s.evaluation)
+					]));
 		}
 	}
 };
@@ -6378,8 +6372,7 @@ var $author$project$Main$view = function (model) {
 					[
 						$elm$html$Html$text('Logic Calcluator')
 					])),
-				$author$project$Main$viewServerResponse(model),
-				$author$project$Main$ourTextArea(model)
+				$author$project$Main$viewServerResponse(model)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
