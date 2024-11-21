@@ -15,77 +15,90 @@ main =
     , subscriptions = subscriptions
     , view = view
     }
-type Model = Failure 
-           | Loading 
-           | Success ServerResponse
-
-
+type alias Model =  
+           {failure : Bool  
+           ,loading : Bool 
+           ,textInput   : String 
+           ,success : Maybe ServerResponse 
+           } 
+initialModel =  
+             {failure = False
+             ,loading = False 
+             ,textInput   = ""
+             ,success  = Nothing 
+             }
 type alias ServerResponse = 
       { parseError : String 
       , evaluation : String 
       }
+
 init : () -> (Model, Cmd Msg)
 init _ = 
-  (Loading, getServerResponse)
+  (initialModel, Cmd.none)
 
-type Msg = MorePlease 
+type Msg = Post 
          | GotResult (Result Http.Error ServerResponse)
+         | TextInput String 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
    case msg of 
-    MorePlease -> (Loading, getServerResponse)
+    Post -> ({model | loading = True}, postRequest model.textInput)
     (GotResult result) -> case result of 
-                            Ok r -> (Success r, Cmd.none)
-                            (Err _) ->  (Failure, Cmd.none)
+                            Ok r -> ({model | success = Just r }, Cmd.none)
+                            (Err _) ->  ({model | failure = True }, Cmd.none)
+    (TextInput s)      -> ({model | textInput = s}, Cmd.none)
 
 
 subscriptions : Model -> Sub Msg 
 subscriptions model = 
    Sub.none 
+
 view : Model -> Html Msg 
 view model = 
   div [] 
   [h2 [] [text "Logic Calcluator"]
   ,viewServerResponse model 
-  ,ourTextArea model 
+  ,ourTextArea model
   ]
 
 ourTextArea : Model -> Html Msg 
 ourTextArea model = textarea
-              [
+              [ onInput TextInput
               ]
               [i [] [text "Enter here..."]
+              , button [onClick Post] [text model.textInput]
               ]
 
 viewServerResponse : Model -> Html Msg 
 viewServerResponse model = 
-   case model of 
-    Failure -> 
+   case model.failure of 
+    True -> 
       div [] 
       [ text "I could not get a server response"
-      , button [onClick MorePlease] [text "try again"]
       ]
-    Loading -> 
-     text "Loading"
-    Success serverResponse -> 
-     case serverResponse.evaluation of 
-      "Nothing" -> div []
-                 [button [onClick MorePlease, style "display" "block"] [text "More Please!"]
-                 , blockquote [] [text serverResponse.parseError]
-                 ]
-      _        -> div []
-                 [button [onClick MorePlease] [text "More Please!"]
-                 , blockquote [] [text serverResponse.evaluation]
-                 ]
-    
-getServerResponse : Cmd Msg 
-getServerResponse = 
-    Http.get 
-    { url = "/elmJSON"
-    , expect = Http.expectJson GotResult resultDecoder
-    }
+    False -> case model.loading of 
+              True -> text "Loading"
+              False -> case model.success of 
+                        (Just serverResponse) -> case serverResponse.evaluation of 
+                                                  "" ->  div []
+                                                         [ blockquote [] [text serverResponse.parseError]
+                                                         ]
+                                                  t  ->  div []
+                                                         [blockquote [] [text t]
+                                                         ]
 
+                        Nothing ->                       div []
+                                                         [blockquote [] [text "Nothing yet"]
+                                                         ]
+
+postRequest : String -> Cmd Msg 
+postRequest s = 
+   Http.post 
+     {  url     = "/upload"
+     ,  body    = stringBody "text/plain" s
+     ,  expect  = Http.expectJson GotResult resultDecoder
+     }
 resultDecoder : Decoder ServerResponse
 resultDecoder = 
   map2 ServerResponse

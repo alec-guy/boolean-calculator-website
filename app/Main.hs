@@ -29,15 +29,15 @@ import Data.Aeson
 import GHC.Generics
 
 
-data ParseErrorOrEvaluation = ParseErrorOrEvaluation
-                            {parseError :: String 
-                            ,evaluation :: String 
-                            } deriving (Generic,Show)
-instance ToJSON ParseErrorOrEvaluation where 
+data JsonR = JsonR
+           {parseError :: String 
+           ,evaluation :: String 
+           } deriving (Generic,Show)
+instance ToJSON JsonR where 
    -- No need to provide a toJSON implementation.. 
    toEncoding = genericToEncoding defaultOptions 
   
-instance FromJSON ParseErrorOrEvaluation 
+instance FromJSON JsonR 
       -- no need to provide a parseJSON implementation. 
 
 
@@ -147,34 +147,43 @@ handleMsg msg = do
       case (version0, method0, BS.isInfixOf hostName $ fromJust maybeHost) of
         ("HTTP/1.1", "GET", True) -> do 
                     putStrLn "Making httpResponse, found version and method"
-                    response <- makeHTTPResponse version0 method0 path0
+                    response <- makeHTTPResponse httpReq 
                     return response
 
         (_, _ , False) -> do 
                     putStrLn "Making httpResponse, did not find host name"
                     return BS.empty 
 
-makeHTTPResponse :: BS.ByteString -> BS.ByteString -> BS.ByteString -> IO BS.ByteString
-makeHTTPResponse version0 method0 path = do 
+makeHTTPResponse :: Types.HTTPRequest -> IO BS.ByteString
+makeHTTPResponse http = do 
     let bsPath s = BS.pack $ stringToWord8 s
-        maybeAcmeChallenge = parseMaybe Parser.parseToken path
-    case path of 
+        maybeAcmeChallenge = parseMaybe Parser.parseToken (Types.path http)
+    case (Types.path http) of 
       "/"   ->  do 
                  body0 <- BS.readFile pathToHTML 
                  putStrLn "Successfuly read HTML file and now going to send it."
                  let fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0
-                     headers = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                 return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers <> body0
-      "/elmJson" -> return BS.empty 
-      _          -> do 
-                     case maybeAcmeChallenge of 
-                      Nothing -> return BS.empty 
-                      (Just token) -> do 
+                     headers0 = "Content-Type: text/html; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                 return $ "HTTP/1.1" <>  " 200 OK\r\n" <> headers0 <> body0
+      "/upload"  ->  case parse Parser.parseExpression "" (show $ fromJust $ Types.maybeBody http) of 
+                         Left pe      ->  do 
+                              let fileSize = BS.pack $ stringToWord8 $ show $ length $ errorBundlePretty pe 
+                                  headers0 = "Content-Type: application/json; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                              return $ "HTTP/1.1" <> " 200 Ok\r\n" <> headers0 <> (BS.toStrict $ encode $ JsonR {parseError = errorBundlePretty pe, evaluation = ""})
+                         Right result ->  do 
+                                   let headers0 = "Content-Type: application/json; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                                       evaledResult = show $ Evaluator.evalBExpr result
+                                       fileSize = BS.pack $ stringToWord8 $ show $ length $ evaledResult 
+                                   return $ "HTTP/1.1" <> " 200 Ok\r\n" <> headers0 <> (BS.toStrict $ encode $ JsonR {parseError = "", evaluation = evaledResult})
+                    
+      _          ->  case maybeAcmeChallenge of 
+                       Nothing -> return BS.empty 
+                       (Just token) -> do 
                                  let body0    = case token of 
                                                  (Types.Token b) -> b
                                      fileSize = BS.pack $ stringToWord8 $ show $ BS.length body0 
-                                     headers =  "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
-                                 return $ version0 <> " 200 OK \r\n" <> headers <> body0 
+                                     headers0 =  "Content-Type: text; charset=UTF-8\r\n" <> "Content-Length: " <> fileSize <> "\r\n\r\n"
+                                 return $ (Types.version http) <> " 200 OK \r\n" <> headers0 <> body0 
 
 
 stringToWord8 :: String -> [Word8]
@@ -182,3 +191,4 @@ stringToWord8 = map (fromIntegral . ord)
 
 pathToHTML :: String 
 pathToHTML = "C:\\Users\\alecb\\logic\\frontend\\index.html"
+
