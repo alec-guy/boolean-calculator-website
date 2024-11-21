@@ -63,10 +63,14 @@ view model =
   ]
 
 ourTextArea : Model -> Html Msg 
-ourTextArea model = textarea
-              [ onInput TextInput
-              ]
-              [i [] [text "Enter here..."]
+ourTextArea model = 
+              div 
+              []
+              [ textarea
+                [ onInput TextInput]
+                [i [] [text "Enter here..."]
+
+                ]
               , button [onClick Post] [text model.textInput]
               ]
 

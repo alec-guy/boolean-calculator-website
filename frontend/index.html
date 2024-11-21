@@ -6265,19 +6265,25 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $elm$html$Html$textarea = _VirtualDom_node('textarea');
 var $author$project$Main$ourTextArea = function (model) {
 	return A2(
-		$elm$html$Html$textarea,
-		_List_fromArray(
-			[
-				$elm$html$Html$Events$onInput($author$project$Main$TextInput)
-			]),
+		$elm$html$Html$div,
+		_List_Nil,
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$i,
-				_List_Nil,
+				$elm$html$Html$textarea,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Enter here...')
+						$elm$html$Html$Events$onInput($author$project$Main$TextInput)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$i,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Enter here...')
+							]))
 					])),
 				A2(
 				$elm$html$Html$button,
