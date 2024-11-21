@@ -42,6 +42,11 @@ instance ToJSON JsonR where
 instance FromJSON JsonR 
       -- no need to provide a parseJSON implementation. 
 
+data ElmReq = ElmReq
+            {
+              booleanExpression :: String 
+            } deriving (Generic, Show)
+instance FromJSON ElmReq 
 
 
 main :: IO ()
@@ -158,8 +163,10 @@ makeHTTPResponse httpreq =
        "/upload" -> do 
                      let httpreqBody = case Types.maybeBody httpreq of 
                                         Nothing  -> ""
-                                        (Just b) -> b
-                         jsonR = case parse Parser.parseExpression "" (show httpreqBody) of 
+                                        (Just b) -> case (decode (BS.fromStrict b) :: Maybe ElmReq) of 
+                                                     Nothing -> "" 
+                                                     (Just elmreq) -> booleanExpression elmreq 
+                         jsonR = case parse Parser.parseExpression "" (httpreqBody) of 
                                   Left e -> JsonR {parseError  = errorBundlePretty e 
                                                   ,evaluation = "Nothing"
                                                   }

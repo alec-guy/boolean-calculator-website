@@ -4,7 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Http exposing (..)
-import Json.Decode exposing (..)
+import Json.Decode as Decode exposing (..)
+import Json.Encode as Encode exposing (..)
 import Maybe exposing (withDefault)
 
 
@@ -18,13 +19,13 @@ main =
 type alias Model =  
            {failure : Bool  
            ,loading : Bool 
-           ,textInput   : String 
+           ,textInput   : Request  
            ,success : Maybe ServerResponse 
            } 
 initialModel =  
              {failure = False
              ,loading = False 
-             ,textInput   = ""
+             ,textInput = {boolExpr = ""}
              ,success  = Nothing 
              }
 type alias ServerResponse = 
@@ -47,7 +48,7 @@ update msg model =
     (GotResult result) -> case result of 
                             Ok r -> ({model | success = Just r }, Cmd.none)
                             (Err _) ->  ({model | failure = True }, Cmd.none)
-    (TextInput s)      -> ({model | textInput = s}, Cmd.none)
+    (TextInput s)      -> ({model | textInput = {boolExpr = s }}, Cmd.none)
 
 
 subscriptions : Model -> Sub Msg 
@@ -103,15 +104,25 @@ viewServerResponse model =
                               , br [] []
                               ,text s.evaluation
                               ]
-postRequest : String -> Cmd Msg 
-postRequest s = 
+postRequest : Request -> Cmd Msg 
+postRequest request = 
    Http.post 
      {  url     = "/upload"
-     ,  body    = stringBody "text/plain" s
+     ,  body    = jsonBody <| fromRequest<| request 
      ,  expect  = Http.expectJson GotResult resultDecoder
      }
+type alias Request = 
+          { boolExpr : String
+          }
+
+fromRequest : Request -> Encode.Value
+fromRequest request =  
+             Encode.object 
+             [("booleanExpression", Encode.string request.boolExpr)]
+ 
+    
 resultDecoder : Decoder ServerResponse
 resultDecoder = 
   map2 ServerResponse
-   (field "parseError" string)
-   (field "evaluation" string)
+   (field "parseError" Decode.string)
+   (field "evaluation" Decode.string)

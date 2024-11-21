@@ -5348,7 +5348,12 @@ var $elm$core$Task$perform = F2(
 				A2($elm$core$Task$map, toMessage, task)));
 	});
 var $elm$browser$Browser$element = _Browser_element;
-var $author$project$Main$initialModel = {failure: false, loading: false, success: $elm$core$Maybe$Nothing, textInput: ''};
+var $author$project$Main$initialModel = {
+	failure: false,
+	loading: false,
+	success: $elm$core$Maybe$Nothing,
+	textInput: {boolExpr: ''}
+};
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$init = function (_v0) {
@@ -5976,6 +5981,35 @@ var $elm$http$Http$expectJson = F2(
 						A2($elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(_Utils_Tuple0),
+			pairs));
+};
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Main$fromRequest = function (request) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'booleanExpression',
+				$elm$json$Json$Encode$string(request.boolExpr))
+			]));
+};
+var $elm$http$Http$jsonBody = function (value) {
+	return A2(
+		_Http_pair,
+		'application/json',
+		A2($elm$json$Json$Encode$encode, 0, value));
+};
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -6159,11 +6193,11 @@ var $author$project$Main$resultDecoder = A3(
 	$author$project$Main$ServerResponse,
 	A2($elm$json$Json$Decode$field, 'parseError', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'evaluation', $elm$json$Json$Decode$string));
-var $elm$http$Http$stringBody = _Http_pair;
-var $author$project$Main$postRequest = function (s) {
+var $author$project$Main$postRequest = function (request) {
 	return $elm$http$Http$post(
 		{
-			body: A2($elm$http$Http$stringBody, 'text/plain', s),
+			body: $elm$http$Http$jsonBody(
+				$author$project$Main$fromRequest(request)),
 			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotResult, $author$project$Main$resultDecoder),
 			url: '/upload'
 		});
@@ -6200,7 +6234,9 @@ var $author$project$Main$update = F2(
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{textInput: s}),
+						{
+							textInput: {boolExpr: s}
+						}),
 					$elm$core$Platform$Cmd$none);
 		}
 	});
