@@ -13,8 +13,8 @@ import qualified Control.Monad as CM
 data BooleanOperation = Binary (BoolChar -> BoolChar -> Bool)
                       | Unary  (BoolChar -> Bool)
 -}
-data Operation a b = Binary (a -> a -> b)
-                   | Unary (a -> b)
+data Binary a b = Binary (a -> a -> b)
+data Unary a b  = Unary (a -> b)
 
 makeBinary :: (Bool -> Bool -> Bool) -> Bool -> Bool -> Bool
 makeBinary f b b' = f b b'
@@ -27,8 +27,8 @@ data BinaryT a = Leaf
                deriving (Show, Eq) 
 -}
 data Expression a b = Constant a
-                    | Product (Operation a b ) (Expression a b) (Expression a b)
-                    | One (Operation a b) (Expression a b)
+                    | Product (Binary a b) (Expression a b) (Expression a b)
+                    | One (Unary a b) (Expression a b)
 
 
 andChar = Binary $ makeBinary (&&)

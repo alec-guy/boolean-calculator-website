@@ -57,17 +57,19 @@ subscriptions model =
 
 view : Model -> Html Msg 
 view model = 
-  div [] 
-  [h2 [] [text "Logic Calcluator"]
+  div [id "div1"] 
+  [h2 [id "title"] [text "Logic Calcluator"]
   ,viewServerResponse model 
   ]
 
 ourTextArea : Model -> Html Msg 
 ourTextArea model = 
               div 
-              []
+              [id "div2"]
               [ textarea
-                [ onInput TextInput]
+                [ onInput TextInput
+                , title "Enter Expression Here"
+                ]
                 [i [] [text "Enter here..."]
 
                 ]

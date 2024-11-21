@@ -61,7 +61,7 @@ parseExpression :: Parser (Types.Expression Bool Bool)
 parseExpression = do 
     expr <- (myLexemeWrapper $ Expr.makeExprParser parseTerm table)
     return expr
-    where   table = [ [prefix ["~"] (Types.One Types.norChar)
+    where   table = [ [prefix ["~"] (Types.One Types.notChar)
                     ,prefix ["+"] (Types.One Types.idChar)
                     ]
                   , [binary0 ["&&"] (Types.Product Types.andChar)] 
