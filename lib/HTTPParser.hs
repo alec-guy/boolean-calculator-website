@@ -1,16 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 
-module Parser where 
+module HTTPParser where 
 
+import HTTPTypes 
 import qualified Text.Megaparsec as Mega
-import qualified Text.Megaparsec.Char as MegaChar
-import qualified Text.Megaparsec.Char.Lexer as MegaLexer
 import qualified Text.Megaparsec.Byte as MegaByte
 import qualified Text.Megaparsec.Byte.Lexer as MegaByteLexer
-import qualified Types as Types 
 import qualified Control.Monad.Combinators as Combinators
-import qualified Control.Monad.Combinators.Expr as Expr
 import Data.Void 
 import qualified Control.Monad as CM 
 import qualified Data.Map.Strict as Map
@@ -20,99 +17,26 @@ import Data.Word
 import Control.Applicative ((<*))
 
 
-
-
-type Parser = Mega.Parsec Void String
-
-
-type MyState = Mega.State String Void 
-
 type ByteParser = Mega.Parsec Void BS.ByteString 
 
 
-spaceParser :: Parser ()
-spaceParser = MegaLexer.space MegaChar.space1 Combinators.empty Combinators.empty 
-
--- Parser a -> Parser a
-myLexemeWrapper = MegaLexer.lexeme spaceParser 
-
-mySymbolParser :: String -> Parser String 
-mySymbolParser = MegaLexer.symbol spaceParser 
-
-parens :: Parser a -> Parser a
-parens = Combinators.between (mySymbolParser "(") (mySymbolParser ")")
-
-parseConstant :: Parser (Types.Expression Bool Bool) 
-parseConstant = do 
-    spaceParser
-    eitherTrueOrFalse <- myLexemeWrapper $ Combinators.choice $ 
-                                             [MegaChar.char 'T'
-                                             ,MegaChar.char' 'F'
-                                             ,MegaChar.char '1'
-                                             ,MegaChar.char '0']
-    return $ Types.Constant $ (eitherTrueOrFalse == 'T')
-
-parseTerm :: Parser (Types.Expression Bool Bool)
-parseTerm = do 
-    spaceParser
-    myLexemeWrapper (
-     Combinators.choice
-     [ parens parseExpression  -- Try parsing parenthesized expressions first
-     , parseConstant          -- Then try parsing constants
-     ])
-
-parseExpression :: Parser (Types.Expression Bool Bool)
-parseExpression = do 
-    expr <- (myLexemeWrapper $ Expr.makeExprParser parseTerm table)
-    return expr
-    where   table = [ [prefix ["~", "\x00AC"] (Types.One Types.Not)
-                    ,prefix ["+"] (Types.One Types.Id)
-                    ]
-                  , [binary0 ["&&","\x2227"] (Types.Product Types.And)] 
-                  , [binary1 ["||","\x2228"] (Types.Product Types.Or)
-                    ,binary1 ["<->","\x2194"] (Types.Product Types.Iff)
-                    ,binary1 ["->", "\x2192"] (Types.Product Types.If)
-                    ]
-                  , 
-                    [binary2 ["nand"] (Types.Product Types.Nand)
-                    ,binary2 ["nor", "\x22BB"] (Types.Product Types.Nor)
-                    ,binary2 ["xor"] (Types.Product Types.Xor)
-                    ]
-                  ]
-
-prefix :: [String] -> ((Types.Expression Bool Bool) -> Types.Expression Bool Bool) 
-                   -> Expr.Operator Parser (Types.Expression Bool Bool) 
-prefix l f = Expr.Prefix (f <$ (Combinators.choice (mySymbolParser <$> l)))
-binary0 :: [String] -> ((Types.Expression Bool Bool) -> (Types.Expression Bool Bool) -> (Types.Expression Bool Bool)) 
-                    -> Expr.Operator Parser (Types.Expression Bool Bool)
-binary0 l f = Expr.InfixR $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
-binary1 :: [String] -> ((Types.Expression Bool Bool) -> (Types.Expression Bool Bool) -> (Types.Expression Bool Bool)) 
-                    -> Expr.Operator Parser (Types.Expression Bool Bool)
-binary1 l f = Expr.InfixL $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
-binary2 :: [String] -> ((Types.Expression Bool Bool) -> (Types.Expression Bool Bool) -> (Types.Expression Bool Bool))
-                    -> Expr.Operator Parser (Types.Expression Bool Bool)
-binary2 l f = Expr.InfixN $ f <$ (Combinators.choice $ (mySymbolParser <$> l))
- 
----------------------
----- Networking portion 
-
-parseHTTPResponse :: ByteParser Types.HTTPResponse
+parseHTTPResponse :: ByteParser HTTPResponse
 parseHTTPResponse = do
     statusLine0 <- parseStatusLine
     headersHR0  <- parseHeaders
     body0       <- Combinators.many Mega.anySingle
-    return $ Types.HTTPResponse 
-           {Types.statusLine = statusLine0
-           ,Types.headersHR = headersHR0 
-           ,Types.body = BS.pack body0
+    return $ HTTPResponse 
+           {statusLine = statusLine0
+           ,headersHR = headersHR0 
+           ,body = BS.pack body0
            }
 
 
   
-parseHeaders :: ByteParser Types.Headers
+parseHeaders :: ByteParser Headers
 parseHeaders = do
     keys  <- Combinators.manyTill (Mega.label "parsekeyandvalue" parseKeyAndValue) MegaByte.crlf 
-    return $ Types.Headers { Types.pairs = Map.fromList keys}
+    return $ Headers { pairs = Map.fromList keys}
     where parseKeyAndValue :: ByteParser (BS.ByteString, BS.ByteString)
           parseKeyAndValue = do
                     key   <- parseKey
@@ -143,7 +67,7 @@ parseHeaders = do
                               monadAppend :: Monad m => m a -> m [a] -> m [a]
                               monadAppend = CM.liftM2 (:)
 
-parseStatusLine :: ByteParser Types.StatusLine
+parseStatusLine :: ByteParser StatusLine
 parseStatusLine = do
       versionHR0    <- parseHttpVersion
       MegaByte.hspace
@@ -151,11 +75,11 @@ parseStatusLine = do
       MegaByte.hspace
       reasonPhrase0   <- parseReasonPhrase
       parseCarriageReturn
-      return $ Types.StatusLine
+      return $ StatusLine
              {
-                Types.versionHR   = versionHR0
-             ,  Types.statusCode    = statusCode0
-             ,  Types.reasonPhrase  = reasonPhrase0
+                versionHR   = versionHR0
+             ,  statusCode    = statusCode0
+             ,  reasonPhrase  = reasonPhrase0
              }
       where parseHttpVersion :: ByteParser BS.ByteString
             parseHttpVersion = 
@@ -169,28 +93,28 @@ parseStatusLine = do
 
 
 --- 
-parseToken :: ByteParser Types.Token 
+parseToken :: ByteParser Token 
 parseToken = do 
         let acmeChallenge = (MegaByte.string "acme-challenge") >> Mega.anySingle
         _      <- Combinators.skipManyTill Mega.anySingle acmeChallenge 
         _      <- acmeChallenge
         token  <- Combinators.manyTill Mega.anySingle (MegaByte.string " ")
-        return $ Types.Token $ BS.pack token
+        return $ Token $ BS.pack token
   -- FOR ACME CHALLENGE
       
-parseHTTPRequest :: ByteParser Types.HTTPRequest
+parseHTTPRequest :: ByteParser HTTPRequest
 parseHTTPRequest = do 
            method0    <- parseMethod 
            path0      <- parsePath
            version0   <- parseVersionResponse
            headers0   <- parseHeaders
            maybeBody0 <- parseMaybeBody
-           return $ Types.HTTPRequest 
-                  {Types.method    = method0
-                  ,Types.path      = path0
-                  ,Types.version  = version0 
-                  ,Types.headers   = headers0
-                  ,Types.maybeBody = maybeBody0
+           return $ HTTPRequest 
+                  {method    = method0
+                  ,path      = path0
+                  ,version  = version0 
+                  ,headers   = headers0
+                  ,maybeBody = maybeBody0
                   }
            where parseMaybeBody = do 
                       e <- Combinators.eitherP (MegaByte.crlf >> MegaByte.crlf) (return ())

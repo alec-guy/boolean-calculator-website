@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Types where 
+module HTTPTypes where 
 
 import qualified Network.Socket as NS
 import qualified Network.Socket.ByteString as NSB
@@ -8,33 +8,6 @@ import qualified Network.TLS as TLS
 import qualified Data.ByteString as BS
 import qualified Data.Map.Strict as Map
 import qualified Control.Monad as CM
-
-{-
-data BooleanOperation = Binary (BoolChar -> BoolChar -> Bool)
-                      | Unary  (BoolChar -> Bool)
--}
-
-newtype Gate = And 
-              | Or 
-              | If 
-              | Iff 
-              | Xor 
-              | Nand 
-              | Nor 
-              | Not 
-              | Id 
-              deriving (Show, Eq)
-{-
-data BinaryT a = Leaf 
-               | Node (BinaryT a) a (BinaryT a)
-               deriving (Show, Eq) 
--}
-data Expression a b = Constant a
-                    | Product Gate (Expression a b) (Expression a b)
-                    | One Gate (Expression a b)
-
----------------------------------
----     NETWORKING PORTION -----------
 
 data HTTPResponse = HTTPResponse
           { statusLine :: StatusLine

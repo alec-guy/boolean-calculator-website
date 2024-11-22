@@ -5,10 +5,12 @@ module Main where
 
 import qualified Control.Concurrent as Concurrent
 import qualified System.Exit 
-import qualified Types as Types 
+import HTTPParser 
+import HTTPTypes 
+import LogicParser 
+import LogicTypes 
 import qualified System.IO as SIO
 import qualified Control.Exception as CE
-import qualified Parser as Parser 
 import qualified Evaluator as Evaluator
 import Text.Megaparsec hiding (parseError)
 import qualified Text.Megaparsec.Byte as MegaByte
@@ -105,7 +107,7 @@ httpsServer = do
     credential            <- (case maybeCredential of 
                               Left s -> error s 
                               Right c -> return c)
-    let myBackend      = Types.MyBackend {Types.mySockey = conn}
+    let myBackend      = MyBackend {mySockey = conn}
         newShared      = (TLS.serverShared TLS.defaultParamsServer) {TLS.sharedCAStore = store}
         newShared'     = newShared {TLS.sharedCredentials = TLS.Credentials [credential]}  
         myParamsServer = TLS.defaultParamsServer {TLS.serverShared = newShared'}
@@ -122,7 +124,7 @@ httpsServer = do
 
 handleMsg :: BS.ByteString -> IO BS.ByteString
 handleMsg msg = do
-  case parse (Parser.parseHTTPRequest <* eof) "" msg of
+  case parse (parseHTTPRequest <* eof) "" msg of
     Left e -> do
       putStrLn "Error parsing message..."
       putStrLn $ errorBundlePretty e
@@ -133,7 +135,7 @@ handleMsg msg = do
       return BS.empty
 
     Right httpReq -> do
-      let version0   = Types.version httpReq 
+      let version0   = version httpReq 
       putStr "HTTP request: "
       SIO.hFlush SIO.stdout
       putStrLn $ show $ httpReq 
@@ -147,36 +149,36 @@ handleMsg msg = do
 
         _         -> do putStrLn "I am stupid" >> return BS.empty
 
-makeHTTPResponse :: Types.HTTPRequest -> IO BS.ByteString
+makeHTTPResponse :: HTTPRequest -> IO BS.ByteString
 makeHTTPResponse httpreq = 
-      case (Types.path httpreq) of 
+      case (path httpreq) of 
        "/" -> do 
                html <- BS.readFile pathToHTML
                let contentLength = BS.length html 
                return $ 
-                 (Types.version httpreq) <>  
+                 (version httpreq) <>  
                  " 200 OK\r\n" <> 
                  "Content: text/html\r\nContent-Length: " <>
                  (BS.pack $ stringToWord8 $ show contentLength)  <>
                  "\r\n\r\n" <> 
                  html 
        "/upload" -> do 
-                     let httpreqBody = case Types.maybeBody httpreq of 
+                     let httpreqBody = case maybeBody httpreq of 
                                         Nothing  -> ""
                                         (Just b) -> case (decode (BS.fromStrict b) :: Maybe ElmReq) of 
                                                      Nothing -> "" 
                                                      (Just elmreq) -> booleanExpression elmreq 
-                         jsonR = case parse Parser.parseExpression "" (httpreqBody) of 
+                         jsonR = case parse parseExpression "" (httpreqBody) of 
                                   Left e -> JsonR {parseError  = errorBundlePretty e 
                                                   ,evaluation = "Nothing"
                                                   }
-                                  Right expr -> let evaluated = Evaluator.evalBExpr expr 
+                                  Right expr -> let evaluated = Evaluator.evalGate expr 
                                                 in JsonR {parseError = ""
                                                          ,evaluation = show evaluated
                                                          }
                          encodedJson  = BS.toStrict $ encode jsonR 
                          contentLength = BS.length encodedJson
-                         response      = (Types.version httpreq) <>  
+                         response      = (version httpreq) <>  
                                            " 200 OK\r\n" <> 
                                            "Content: application/json\r\nContent-Length: " <>
                                            (BS.pack $ stringToWord8 $ show contentLength)  <>
@@ -190,7 +192,7 @@ makeHTTPResponse httpreq =
                                           png <- BS.readFile "frontend/images/rootBeerAvatar.png"
                                           let contentLength = BS.length png 
                                           return $ 
-                                            (Types.version httpreq) <>
+                                            (version httpreq) <>
                                             " 200 OK\r\n" <>
                                             "Content: image/png\r\nConent-Lengh: " <> 
                                             (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -200,7 +202,7 @@ makeHTTPResponse httpreq =
                                         jpg <- BS.readFile "frontend/images/jakeTheDog.jpg"
                                         let contentLength = BS.length jpg 
                                         return $ 
-                                          (Types.version httpreq) <>
+                                          (version httpreq) <>
                                           " 200 OK\r\n" <>
                                           "Content: image/jpg\r\nConent-Lengh: " <> 
                                           (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -210,7 +212,7 @@ makeHTTPResponse httpreq =
                                     png <- BS.readFile "frontend/images/bubblegum.png"
                                     let contentLength = BS.length png 
                                     return $ 
-                                        (Types.version httpreq) <>
+                                        (version httpreq) <>
                                         " 200 OK\r\n" <>
                                         "Content: image/png\r\nConent-Lengh: " <> 
                                         (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -220,7 +222,7 @@ makeHTTPResponse httpreq =
                               png <- BS.readFile "frontend/images/fin.png"
                               let contentLength = BS.length png 
                               return $ 
-                                  (Types.version httpreq) <>
+                                  (version httpreq) <>
                                   " 200 OK\r\n" <>
                                   "Content: image/png\r\nConent-Lengh: " <> 
                                   (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -230,7 +232,7 @@ makeHTTPResponse httpreq =
                                     png <- BS.readFile "frontend/images/marceline.png"
                                     let contentLength = BS.length png 
                                     return $ 
-                                        (Types.version httpreq) <>
+                                        (version httpreq) <>
                                         " 200 OK\r\n" <>
                                         "Content: image/png\r\nConent-Lengh: " <> 
                                         (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -240,7 +242,7 @@ makeHTTPResponse httpreq =
                                     mp3 <- BS.readFile "frontend/sounds/themeSong.mp3"
                                     let contentLength = BS.length mp3
                                     return $ 
-                                        (Types.version httpreq) <>
+                                        (version httpreq) <>
                                         " 200 OK\r\n" <>
                                         "Content: audio/mpeg\r\nConent-Lengh: " <> 
                                         (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -250,7 +252,7 @@ makeHTTPResponse httpreq =
                                     mp3 <- BS.readFile "frontend/sounds/im-a-tough-tooting-baby.mp3"
                                     let contentLength = BS.length mp3
                                     return $ 
-                                        (Types.version httpreq) <>
+                                        (version httpreq) <>
                                         " 200 OK\r\n" <>
                                         "Content: audio/mpeg\r\nConent-Lengh: " <> 
                                         (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -260,7 +262,7 @@ makeHTTPResponse httpreq =
                                    mp3 <- BS.readFile "frontend/sounds/jake-fart.mp3"
                                    let contentLength = BS.length mp3
                                    return $ 
-                                        (Types.version httpreq) <>
+                                        (version httpreq) <>
                                         " 200 OK\r\n" <>
                                         "Content: audio/mpeg\r\nConent-Lengh: " <> 
                                         (BS.pack $ stringToWord8 $ show contentLength) <>
@@ -268,7 +270,7 @@ makeHTTPResponse httpreq =
                                         mp3
        
        _         -> return $ 
-                     (Types.version httpreq) <> 
+                     (version httpreq) <> 
                      " 404 Not Found\r\n\r\n"
 
 stringToWord8 :: String -> [Word8]
