@@ -34,6 +34,7 @@ import GHC.Generics
 data JsonR = JsonR
            {parseError :: String 
            ,evaluation :: String 
+           ,gatesAndOuts :: [(String,Bool)]
            } deriving (Generic,Show)
 instance ToJSON JsonR where 
    -- No need to provide a toJSON implementation.. 
@@ -169,10 +170,12 @@ makeHTTPResponse httpreq =
                          jsonR = case parse parseExpression "" (httpreqBody) of 
                                   Left e -> JsonR {parseError  = errorBundlePretty e 
                                                   ,evaluation = "Nothing"
+                                                  ,gatesAndOuts = []
                                                   }
                                   Right expr -> let evaluated = Evaluator.evalGate expr 
-                                                in JsonR {parseError = ""
-                                                         ,evaluation = show evaluated
+                                                in JsonR {parseError   = ""
+                                                         ,evaluation   = show evaluated
+                                                         ,gatesAndOuts = collectGatesAndOuts expr
                                                          }
                          encodedJson  = BS.toStrict $ encode jsonR 
                          contentLength = BS.length encodedJson
