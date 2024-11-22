@@ -7054,6 +7054,8 @@ var $author$project$Main$and = _Utils_chr('\u2227');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$Main$ifThen = _Utils_chr('\u2192');
 var $author$project$Main$iff = _Utils_chr('\u2194');
+var $author$project$Main$nand = _Utils_chr('\u22BC');
+var $author$project$Main$nor = _Utils_chr('\u22BD');
 var $author$project$Main$notChar = _Utils_chr('\u00AC');
 var $author$project$Main$or = _Utils_chr('\u2228');
 var $author$project$Main$TextInput = function (a) {
@@ -7128,30 +7130,40 @@ var $author$project$Main$ourTextArea = function (model) {
 							])),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
 						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						function () {
-						var _v0 = model.success;
-						if (_v0.$ === 'Nothing') {
-							return $elm$html$Html$text('');
-						} else {
-							var r = _v0.a;
-							var _v1 = r.evaluation;
-							if (_v1 === 'Nothing') {
-								return $elm$html$Html$text(r.parseError);
-							} else {
-								return $elm$html$Html$text(r.evaluation);
-							}
-						}
-					}()
+						A2(
+						$elm$html$Html$i,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'color', 'black')
+							]),
+						_List_fromArray(
+							[
+								function () {
+								var _v0 = model.success;
+								if (_v0.$ === 'Nothing') {
+									return $elm$html$Html$text('');
+								} else {
+									var r = _v0.a;
+									var _v1 = r.evaluation;
+									if (_v1 === 'Nothing') {
+										return $elm$html$Html$text(r.parseError);
+									} else {
+										return $elm$html$Html$text(r.evaluation);
+									}
+								}
+							}()
+							]))
 					]))
 			]));
 };
+var $author$project$Main$xor = _Utils_chr('\u2295');
 var $author$project$Main$calculator = function (m) {
 	return A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
 				$elm$html$Html$Attributes$id('calculator'),
-				A2($elm$html$Html$Attributes$style, 'background-color', '#333'),
+				A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
 				A2($elm$html$Html$Attributes$style, 'padding', '20px'),
 				A2($elm$html$Html$Attributes$style, 'border-raidus', '20px'),
 				A2($elm$html$Html$Attributes$style, 'box-shadow', '0 4px 8px rgba(0,0,0,0.2)')
@@ -7218,6 +7230,7 @@ var $author$project$Main$calculator = function (m) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
+								A2($elm$html$Html$Attributes$style, 'background-color', 'yellow'),
 								$elm$html$Html$Events$onClick(
 								$author$project$Main$Operator($author$project$Main$and))
 							]),
@@ -7263,6 +7276,40 @@ var $author$project$Main$calculator = function (m) {
 						_List_fromArray(
 							[
 								$elm$html$Html$Events$onClick(
+								$author$project$Main$Operator($author$project$Main$xor))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('\u2295')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Operator($author$project$Main$nand))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('\u22BC')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick(
+								$author$project$Main$Operator($author$project$Main$nor))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('\u22BD')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'background-color', 'red'),
+								$elm$html$Html$Events$onClick(
 								$author$project$Main$Symbol(
 									_Utils_chr('(')))
 							]),
@@ -7291,18 +7338,19 @@ var $author$project$Main$calculator = function (m) {
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('backspace')
+								$elm$html$Html$text('<- backspace')
 							])),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
+								A2($elm$html$Html$Attributes$style, 'background-color', 'green'),
 								$elm$html$Html$Events$onClick(
 								$author$project$Main$Erase('delete'))
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('delete')
+								$elm$html$Html$text('NUKE')
 							])),
 						A2(
 						$elm$html$Html$button,
@@ -7314,20 +7362,20 @@ var $author$project$Main$calculator = function (m) {
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('_______________')
+								$elm$html$Html$text('space')
 							])),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
 								$elm$html$Html$Events$onClick($author$project$Main$Post),
-								A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
+								A2($elm$html$Html$Attributes$style, 'background-color', 'orange'),
 								A2($elm$html$Html$Attributes$style, 'color', 'white'),
 								A2($elm$html$Html$Attributes$style, 'border', 'none')
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text('Enter')
+								$elm$html$Html$text('Enter ->')
 							]))
 					]))
 			]));

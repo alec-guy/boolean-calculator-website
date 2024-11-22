@@ -161,11 +161,13 @@ view model =
                  Nothing -> text ""
                  (Just au) -> au
   ]
+
+
 calculator : Model -> Html Msg 
 calculator m = 
             div 
             [id "calculator"
-            ,style "background-color" "#333"
+            ,style "background-color" "blue"
             ,style "padding" "20px"
             ,style "border-raidus" "20px" --rounded corners
             ,style "box-shadow" "0 4px 8px rgba(0,0,0,0.2)"
@@ -183,22 +185,25 @@ calculator m =
              [button [onClick <| (Operator 'T')]   [text "T"]
              ,button [onClick <| (Operator 'F')]   [text "F"]
              ,button [onClick <| (Operator notChar)] [text "\u{00AC}"]
-             ,button [onClick <| (Operator and)] [text "\u{2227}"]
+             ,button [style "background-color" "yellow" , onClick <| (Operator and)] [text "\u{2227}"]
              ,button [onClick <| (Operator or)] [text "\u{2228}"] 
              ,button [onClick <| (Operator ifThen)] [text "\u{2192}"] 
              ,button [onClick <| (Operator iff)] [text "\u{2194}"]
-             ,button [onClick <| (Symbol '(')] [text "("]
+             ,button [onClick <| (Operator xor)] [text "\u{2295}"]
+             ,button [onClick <| (Operator nand)] [text "\u{22BC}"]
+             ,button [onClick <| (Operator nor)]  [text "\u{22BD}"]
+             ,button [style "background-color" "red" , onClick <| (Symbol '(')] [text "("]
              ,button [onClick <| (Symbol ')')] [text ")"]
-             ,button [onClick <| (Erase "backspace")] [text "backspace"]
-             ,button [onClick <| (Erase "delete")]    [text "delete"]
-             ,button [onClick <| (Symbol ' ')] [text "_______________"]
+             ,button [onClick <| (Erase "backspace")] [text "<- backspace"]
+             ,button [style "background-color" "green" , onClick <| (Erase "delete")]    [text "NUKE"]
+             ,button [onClick <| (Symbol ' ')] [text "space"]
              , button 
                 [onClick Post
-                ,style "background-color" "blue"
+                ,style "background-color" "orange"
                 ,style "color" "white"
                 ,style "border" "none"
                 ] 
-                [text "Enter"]
+                [text "Enter ->"]
             ]
             ]
 
@@ -212,6 +217,10 @@ and : Char
 and = '\u{2227}'
 or : Char 
 or = '\u{2228}'
+xor : Char 
+xor = '\u{2295}'
+nand = '\u{22BC}'
+nor = '\u{22BD}'
 
 ourTextArea : Model -> Html Msg 
 ourTextArea model = 
@@ -230,11 +239,14 @@ ourTextArea model =
                 [i [style "color" "black"] [text model.textInput.boolExpr]
                 , br [] []
                 , br [] []
-                ,case model.success of 
-                  Nothing -> text ""
-                  (Just r)-> case r.evaluation of 
-                              "Nothing" -> text r.parseError
-                              _         -> text r.evaluation
+                ,i 
+                 [style "color" "black"] 
+                 [case model.success of 
+                   Nothing -> text ""
+                   (Just r)-> case r.evaluation of 
+                               "Nothing" -> text r.parseError
+                               _         -> text r.evaluation
+                 ]
                 ]
               ]   
       
