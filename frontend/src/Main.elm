@@ -27,7 +27,6 @@ pathToMyImage path = img
          ,style "width"    "80px"
          ,style "margin" "0 auto"
          ,onMouseOver AdventureTimeSound
-         ,onClick AdventureTimeSound
          ] 
          []
 pathToMyAudio : String -> (Html Msg)
