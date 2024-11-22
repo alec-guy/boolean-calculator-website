@@ -6824,17 +6824,32 @@ var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
 		{body: r.body, expect: r.expect, headers: _List_Nil, method: 'POST', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$Main$ServerResponse = F2(
-	function (parseError, evaluation) {
-		return {evaluation: evaluation, parseError: parseError};
+var $author$project$Main$ServerResponse = F3(
+	function (parseError, evaluation, gatesAndOuts) {
+		return {evaluation: evaluation, gatesAndOuts: gatesAndOuts, parseError: parseError};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Decode$index = _Json_decodeIndex;
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$resultDecoder = A3(
+var $author$project$Main$gateAndOutDecoder = A3(
 	$elm$json$Json$Decode$map2,
+	$elm$core$Tuple$pair,
+	A2($elm$json$Json$Decode$index, 0, $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$index, 1, $elm$json$Json$Decode$bool));
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Main$gatesAndOutsDecoder = $elm$json$Json$Decode$list($author$project$Main$gateAndOutDecoder);
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $author$project$Main$resultDecoder = A4(
+	$elm$json$Json$Decode$map3,
 	$author$project$Main$ServerResponse,
 	A2($elm$json$Json$Decode$field, 'parseError', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'evaluation', $elm$json$Json$Decode$string));
+	A2($elm$json$Json$Decode$field, 'evaluation', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'gatesAndOuts', $author$project$Main$gatesAndOutsDecoder));
 var $author$project$Main$postRequest = function (request) {
 	return $elm$http$Http$post(
 		{
@@ -7125,29 +7140,25 @@ var $author$project$Main$ourTextArea = function (model) {
 							]),
 						_List_fromArray(
 							[
-								$elm$html$Html$text(model.textInput.boolExpr)
-							])),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						A2(
-						$elm$html$Html$i,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'color', 'black')
-							]),
-						_List_fromArray(
-							[
+								$elm$html$Html$text(model.textInput.boolExpr),
+								A2($elm$html$Html$br, _List_Nil, _List_Nil),
+								A2($elm$html$Html$br, _List_Nil, _List_Nil),
 								function () {
 								var _v0 = model.success;
 								if (_v0.$ === 'Nothing') {
-									return $elm$html$Html$text('');
+									return $elm$html$Html$text('Error :(');
 								} else {
 									var r = _v0.a;
 									var _v1 = r.evaluation;
-									if (_v1 === 'Nothing') {
-										return $elm$html$Html$text(r.parseError);
-									} else {
-										return $elm$html$Html$text(r.evaluation);
+									switch (_v1) {
+										case 'Nothing':
+											return $elm$html$Html$text(r.parseError);
+										case 'True':
+											return $elm$html$Html$text('True');
+										case 'False':
+											return $elm$html$Html$text('False');
+										default:
+											return $elm$html$Html$text('Could not parse response');
 									}
 								}
 							}()

@@ -10,6 +10,7 @@ import Maybe exposing (withDefault)
 import Time as Time exposing (..)
 import Random as Random exposing (..)
 import Array as Array exposing (..)
+import Dict as D exposing (..)
 
 
 
@@ -78,8 +79,9 @@ initialModel =
              ,soundNumber = Just 1 
              }
 type alias ServerResponse = 
-      { parseError : String 
-      , evaluation : String 
+      { parseError   : String 
+      , evaluation   : String 
+      , gatesAndOuts : List (String,Bool)
       }
 
 init : () -> (Model, Cmd Msg)
@@ -235,20 +237,24 @@ ourTextArea model =
                 , style "padding" "10px"
                 , style "height" "100px"
                 ]
-                [i [style "color" "black"] [text model.textInput.boolExpr]
-                , br [] []
-                , br [] []
-                ,i 
-                 [style "color" "black"] 
-                 [case model.success of 
-                   Nothing -> text ""
-                   (Just r)-> case r.evaluation of 
-                               "Nothing" -> text r.parseError
-                               _         -> text r.evaluation
+                [i [style "color" "black"] 
+                 [text model.textInput.boolExpr
+                 , br [] []
+                 , br [] []
+                 ,case model.success of 
+                   Nothing -> text "Error :("
+                   (Just r) -> case r.evaluation of 
+                                "Nothing" -> text r.parseError 
+                                "True"    -> text "True"
+                                "False"   -> text "False"
+                                _         -> text "Could not parse response"
                  ]
                 ]
               ]   
-      
+fromBool  : Bool -> String 
+fromBool b = case b of 
+              True  -> "True"  
+              False -> "False" 
 viewServerResponse : Model -> Html Msg 
 viewServerResponse model = 
    case model.success of 
@@ -293,6 +299,15 @@ fromRequest request =
     
 resultDecoder : Decoder ServerResponse
 resultDecoder = 
-  Decode.map2 ServerResponse
+  Decode.map3 ServerResponse
    (field "parseError" Decode.string)
    (field "evaluation" Decode.string)
+   (field "gatesAndOuts" gatesAndOutsDecoder)
+gateAndOutDecoder : Decoder (String,Bool)
+gateAndOutDecoder = 
+    Decode.map2 Tuple.pair 
+      (Decode.index 0 Decode.string)
+      (Decode.index 1 Decode.bool)
+gatesAndOutsDecoder : Decoder (List (String,Bool))
+gatesAndOutsDecoder = 
+    Decode.list gateAndOutDecoder
