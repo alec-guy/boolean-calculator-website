@@ -175,7 +175,7 @@ makeHTTPResponse httpreq =
                                   Right expr -> let evaluated = Evaluator.evalGate expr 
                                                 in JsonR {parseError   = ""
                                                          ,evaluation   = show evaluated
-                                                         ,gatesAndOuts = collectGatesAndOuts expr
+                                                         ,gatesAndOuts = Evaluator.collectGatesAndOuts expr
                                                          }
                          encodedJson  = BS.toStrict $ encode jsonR 
                          contentLength = BS.length encodedJson
