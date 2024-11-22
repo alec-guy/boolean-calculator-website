@@ -196,6 +196,17 @@ makeHTTPResponse httpreq =
                                            (BS.pack $ stringToWord8 $ show contentLength) <>
                                            "\r\n\r\n" <>
                                            png
+       "/images/jakeTheDog.jpg"  -> do 
+                                         jpg <- BS.readFile "frontend/images/jakeTheDog.jpg"
+                                         let contentLength = BS.length jpg 
+                                         return $ 
+                                           (Types.version httpreq) <>
+                                           " 200 OK\r\n" <>
+                                           "Content: image/jpg\r\nConent-Lengh: " <> 
+                                           (BS.pack $ stringToWord8 $ show contentLength) <>
+                                           "\r\n\r\n" <>
+                                           jpg
+       
        _         -> return $ 
                      (Types.version httpreq) <> 
                      " 404 Not Found\r\n\r\n"

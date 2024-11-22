@@ -45,7 +45,11 @@ parens = Combinators.between (mySymbolParser "(") (mySymbolParser ")")
 parseConstant :: Parser (Types.Expression Bool Bool) 
 parseConstant = do 
     spaceParser
-    eitherTrueOrFalse <- myLexemeWrapper $ Combinators.choice [MegaChar.char 'T', MegaChar.char' 'F']
+    eitherTrueOrFalse <- myLexemeWrapper $ Combinators.choice $ 
+                                             [MegaChar.char 'T'
+                                             ,MegaChar.char' 'F'
+                                             ,MegaChar.char '1'
+                                             ,MegaChar.char '0']
     return $ Types.Constant $ (eitherTrueOrFalse == 'T')
 
 parseTerm :: Parser (Types.Expression Bool Bool)

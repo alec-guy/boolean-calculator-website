@@ -7,6 +7,8 @@ import Http exposing (..)
 import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)
 import Maybe exposing (withDefault)
+import Time as Time exposing (..)
+
 
 
 main = 
@@ -21,12 +23,14 @@ type alias Model =
            ,loading : Bool 
            ,textInput   : Request  
            ,success : Maybe ServerResponse 
+           ,switchImage : Bool
            } 
 initialModel =  
              {failure = False
              ,loading = False 
              ,textInput = {boolExpr = ""}
              ,success  = Nothing 
+             ,switchImage = False
              }
 type alias ServerResponse = 
       { parseError : String 
@@ -43,6 +47,7 @@ type Msg = Post
          | Operator Char 
          | Erase String 
          | Symbol Char
+         | SwitchImage 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
@@ -58,12 +63,12 @@ update msg model =
                            "delete"    -> ({model | textInput = {boolExpr = ""}},Cmd.none)
                            _           -> (model, Cmd.none)
     (Symbol sy)            -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar sy)}}, Cmd.none)
+    SwitchImage            -> ({model | switchImage = not <| model.switchImage}, Cmd.none)
         
 
 
 subscriptions : Model -> Sub Msg 
-subscriptions model = 
-   Sub.none 
+subscriptions model = Time.every (15 * 1000) (\_ -> SwitchImage) 
 
 view : Model -> Html Msg 
 view model = 
@@ -91,19 +96,34 @@ view model =
       ] 
       [text "Submit"]
     ]
-  ,
-  img 
-       [src "images/rootBeerAvatar.png"
-       ,style "border-radius" "4px"
-       ,style "border" "1px solid #ddd"
-       ,style "padding" "5px"
-       ,style "height"  "80px"
-       ,style "width"    "80px"
-       ,style "position" "fixed"
-       ,style "left"     "0"
-       ,style "right"    "0"
-       ] 
-       []
+  , case model.switchImage of 
+     True -> 
+       img 
+        [src "images/rootBeerAvatar.png"
+        ,style "border-radius" "4px"
+        ,style "border" "1px solid #ddd"
+        ,style "padding" "5px"
+        ,style "height"  "80px"
+        ,style "width"    "80px"
+        ,style "position" "fixed"
+        ,style "left"     "0"
+        ,style "right"    "0"
+        ]      
+        []
+     False ->  
+        img 
+         [src "images/jakeTheDog.jpg"
+         ,style "border-radius" "4px"
+         ,style "border" "1px solid #ddd"
+         ,style "padding" "5px"
+         ,style "height"  "80px"
+         ,style "width"    "80px"
+         ,style "position" "fixed"
+         ,style "left"     "50"
+         ,style "right"    "100"
+         ] 
+         []
+  
   ]
 calculator : Model -> Html Msg 
 calculator m = 
@@ -126,7 +146,7 @@ calculator m =
              ]
              [button [onClick <| (Operator 'T')]   [text "T"]
              ,button [onClick <| (Operator 'F')]   [text "F"]
-             ,button [onClick <| (Operator not)] [text "\u{00AC}"]
+             ,button [onClick <| (Operator notChar)] [text "\u{00AC}"]
              ,button [onClick <| (Operator and)] [text "\u{2227}"]
              ,button [onClick <| (Operator or)] [text "\u{2228}"] 
              ,button [onClick <| (Operator ifThen)] [text "\u{2192}"] 
@@ -143,8 +163,8 @@ ifThen : Char
 ifThen = '\u{2192}'
 iff : Char
 iff = '\u{2194}'
-not : Char
-not = '\u{00AC}'
+notChar : Char
+notChar = '\u{00AC}'
 and : Char
 and = '\u{2227}'
 or : Char 
