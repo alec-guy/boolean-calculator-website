@@ -5435,7 +5435,7 @@ var $author$project$Main$initialModel = {
 	failure: false,
 	loading: false,
 	success: $elm$core$Maybe$Nothing,
-	switchImage: $elm$core$Maybe$Nothing,
+	switchImage: $elm$core$Maybe$Just(1),
 	textInput: {boolExpr: ''}
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -6032,12 +6032,9 @@ var $author$project$Main$pathToMyImage = function (path) {
 				$elm$html$Html$Attributes$src(path),
 				A2($elm$html$Html$Attributes$style, 'border-radius', '4px'),
 				A2($elm$html$Html$Attributes$style, 'border', '1px solid #ddd'),
-				A2($elm$html$Html$Attributes$style, 'padding', '5px'),
 				A2($elm$html$Html$Attributes$style, 'height', '80px'),
 				A2($elm$html$Html$Attributes$style, 'width', '80px'),
-				A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
-				A2($elm$html$Html$Attributes$style, 'left', '50'),
-				A2($elm$html$Html$Attributes$style, 'right', '100')
+				A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
 			]),
 		_List_Nil);
 };
@@ -6896,8 +6893,6 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Main$Post = {$: 'Post'};
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Basics$ge = _Utils_ge;
@@ -6939,8 +6934,48 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$header = _VirtualDom_node('header');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$myHeader = A2(
+	$elm$html$Html$header,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$id('title'),
+			A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+			A2($elm$html$Html$Attributes$style, 'color', 'black')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$h2,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+					A2($elm$html$Html$Attributes$style, 'color', 'black')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Logic Calcluator')
+				]))
+		]));
+var $author$project$Main$Erase = function (a) {
+	return {$: 'Erase', a: a};
+};
+var $author$project$Main$Operator = function (a) {
+	return {$: 'Operator', a: a};
+};
+var $author$project$Main$Post = {$: 'Post'};
+var $author$project$Main$Symbol = function (a) {
+	return {$: 'Symbol', a: a};
+};
+var $author$project$Main$and = _Utils_chr('\u2227');
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Main$ifThen = _Utils_chr('\u2192');
+var $author$project$Main$iff = _Utils_chr('\u2194');
+var $author$project$Main$notChar = _Utils_chr('\u00AC');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6958,26 +6993,11 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$html$Html$br = _VirtualDom_node('br');
-var $author$project$Main$Erase = function (a) {
-	return {$: 'Erase', a: a};
-};
-var $author$project$Main$Operator = function (a) {
-	return {$: 'Operator', a: a};
-};
-var $author$project$Main$Symbol = function (a) {
-	return {$: 'Symbol', a: a};
-};
-var $author$project$Main$and = _Utils_chr('\u2227');
-var $author$project$Main$ifThen = _Utils_chr('\u2192');
-var $author$project$Main$iff = _Utils_chr('\u2194');
-var $author$project$Main$notChar = _Utils_chr('\u00AC');
 var $author$project$Main$or = _Utils_chr('\u2228');
 var $author$project$Main$TextInput = function (a) {
 	return {$: 'TextInput', a: a};
 };
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -7043,7 +7063,23 @@ var $author$project$Main$ourTextArea = function (model) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text(model.textInput.boolExpr)
-							]))
+							])),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						A2($elm$html$Html$br, _List_Nil, _List_Nil),
+						function () {
+						var _v0 = model.success;
+						if (_v0.$ === 'Nothing') {
+							return $elm$html$Html$text('');
+						} else {
+							var r = _v0.a;
+							var _v1 = r.evaluation;
+							if (_v1 === 'Nothing') {
+								return $elm$html$Html$text(r.parseError);
+							} else {
+								return $elm$html$Html$text(r.evaluation);
+							}
+						}
+					}()
 					]))
 			]));
 };
@@ -7217,6 +7253,19 @@ var $author$project$Main$calculator = function (m) {
 						_List_fromArray(
 							[
 								$elm$html$Html$text('_______________')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Main$Post),
+								A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
+								A2($elm$html$Html$Attributes$style, 'color', 'white'),
+								A2($elm$html$Html$Attributes$style, 'border', 'none')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Enter')
 							]))
 					]))
 			]));
@@ -7262,9 +7311,7 @@ var $author$project$Main$viewServerResponse = function (model) {
 							return $elm$html$Html$text('');
 						}
 					}(),
-						$author$project$Main$calculator(model),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						$elm$html$Html$text(s.parseError)
+						$author$project$Main$calculator(model)
 					]));
 		} else {
 			return A2(
@@ -7283,9 +7330,7 @@ var $author$project$Main$viewServerResponse = function (model) {
 							return $elm$html$Html$text('');
 						}
 					}(),
-						$author$project$Main$calculator(model),
-						A2($elm$html$Html$br, _List_Nil, _List_Nil),
-						$elm$html$Html$text(s.evaluation)
+						$author$project$Main$calculator(model)
 					]));
 		}
 	}
@@ -7296,6 +7341,7 @@ var $author$project$Main$view = function (model) {
 		_List_Nil,
 		_List_fromArray(
 			[
+				$author$project$Main$myHeader,
 				A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -7308,32 +7354,7 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A2(
-						$elm$html$Html$h2,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$id('title'),
-								A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Logic Calcluator')
-							])),
-						$author$project$Main$viewServerResponse(model),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Post),
-								A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'border', 'none')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Submit')
-							]))
+						$author$project$Main$viewServerResponse(model)
 					])),
 				function () {
 				var _v0 = model.switchImage;

@@ -21,12 +21,9 @@ pathToMyImage path = img
          [src path
          ,style "border-radius" "4px"
          ,style "border" "1px solid #ddd"
-         ,style "padding" "5px"
          ,style "height"  "80px"
          ,style "width"    "80px"
-         ,style "position" "fixed"
-         ,style "left"     "50"
-         ,style "right"    "100"
+         ,style "margin" "0 auto"
          ] 
          []
 myImages : Array (Html Msg)
@@ -57,7 +54,7 @@ initialModel =
              ,loading = False 
              ,textInput = {boolExpr = ""}
              ,success  = Nothing 
-             ,switchImage = Just 0
+             ,switchImage = Just 1
              }
 type alias ServerResponse = 
       { parseError : String 
@@ -99,32 +96,33 @@ update msg model =
 subscriptions : Model -> Sub Msg 
 subscriptions model = Time.every (15 * 1000) (\_ -> NewImage) 
 
+myHeader : Html Msg 
+myHeader = 
+    Html.header 
+    [id "title"
+    ,style "text-align" "center"
+    ,style "color" "black"
+    ] 
+    [ h2 
+       [ style "text-align" "center"
+       ,style "color" "black"
+       ] 
+     [text "Logic Calcluator"] 
+    ]
 view : Model -> Html Msg 
 view model = 
   div []
-  [
-  div 
+  [ myHeader
+  ,div 
     [id "div1"
     ,style "padding" "0 auto"
     ,style "max-width" "600px"
     ,style "margin" "0 auto" -- Center
     ,style "background-color" "#332"
     ] 
-    [h2 
-     [id "title"
-     ,style "text-align" "center"
-     ,style "color" "white"
-     ] 
-     [text "Logic Calcluator"]
-    ,viewServerResponse model 
-    , button 
-      [onClick Post
-      ,style "background-color" "blue"
-      ,style "color" "white"
-      ,style "border" "none"
-      ] 
-      [text "Submit"]
+    [ viewServerResponse model 
     ]
+  
   
   , case model.switchImage of
      Nothing  -> text ""
@@ -163,6 +161,13 @@ calculator m =
              ,button [onClick <| (Erase "backspace")] [text "backspace"]
              ,button [onClick <| (Erase "delete")]    [text "delete"]
              ,button [onClick <| (Symbol ' ')] [text "_______________"]
+             , button 
+                [onClick Post
+                ,style "background-color" "blue"
+                ,style "color" "white"
+                ,style "border" "none"
+                ] 
+                [text "Enter"]
             ]
             ]
 
@@ -192,7 +197,13 @@ ourTextArea model =
                 , style "height" "100px"
                 ]
                 [i [style "color" "black"] [text model.textInput.boolExpr]
-
+                , br [] []
+                , br [] []
+                ,case model.success of 
+                  Nothing -> text ""
+                  (Just r)-> case r.evaluation of 
+                              "Nothing" -> text r.parseError
+                              _         -> text r.evaluation
                 ]
               ]   
       
@@ -213,8 +224,6 @@ viewServerResponse model =
                                  True -> text "Loading"
                                  False -> text ""
                               ,calculator model
-                              ,br [] []
-                              ,text s.parseError 
                               ]
                  _         -> div 
                               [style "color" "white"]
@@ -222,8 +231,6 @@ viewServerResponse model =
                                 True  -> text "Loading"
                                 False -> text ""
                               ,calculator model
-                              , br [] []
-                              ,text s.evaluation
                               ]
 postRequest : Request -> Cmd Msg 
 postRequest request = 
