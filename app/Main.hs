@@ -187,25 +187,55 @@ makeHTTPResponse httpreq =
                      SIO.hFlush SIO.stdout 
                      return $ response 
        "/images/rootBeerAvatar.png"  -> do 
-                                         png <- BS.readFile "frontend/images/rootBeerAvatar.png"
-                                         let contentLength = BS.length png 
-                                         return $ 
-                                           (Types.version httpreq) <>
-                                           " 200 OK\r\n" <>
-                                           "Content: image/png\r\nConent-Lengh: " <> 
-                                           (BS.pack $ stringToWord8 $ show contentLength) <>
-                                           "\r\n\r\n" <>
-                                           png
+                                          png <- BS.readFile "frontend/images/rootBeerAvatar.png"
+                                          let contentLength = BS.length png 
+                                          return $ 
+                                            (Types.version httpreq) <>
+                                            " 200 OK\r\n" <>
+                                            "Content: image/png\r\nConent-Lengh: " <> 
+                                            (BS.pack $ stringToWord8 $ show contentLength) <>
+                                            "\r\n\r\n" <>
+                                            png
        "/images/jakeTheDog.jpg"  -> do 
-                                         jpg <- BS.readFile "frontend/images/jakeTheDog.jpg"
-                                         let contentLength = BS.length jpg 
-                                         return $ 
-                                           (Types.version httpreq) <>
-                                           " 200 OK\r\n" <>
-                                           "Content: image/jpg\r\nConent-Lengh: " <> 
-                                           (BS.pack $ stringToWord8 $ show contentLength) <>
-                                           "\r\n\r\n" <>
-                                           jpg
+                                        jpg <- BS.readFile "frontend/images/jakeTheDog.jpg"
+                                        let contentLength = BS.length jpg 
+                                        return $ 
+                                          (Types.version httpreq) <>
+                                          " 200 OK\r\n" <>
+                                          "Content: image/jpg\r\nConent-Lengh: " <> 
+                                          (BS.pack $ stringToWord8 $ show contentLength) <>
+                                          "\r\n\r\n" <>
+                                          jpg
+       "/images/bubblegum.png"  -> do 
+                                    png <- BS.readFile "frontend/images/bubblegum.png"
+                                    let contentLength = BS.length png 
+                                    return $ 
+                                        (Types.version httpreq) <>
+                                        " 200 OK\r\n" <>
+                                        "Content: image/png\r\nConent-Lengh: " <> 
+                                        (BS.pack $ stringToWord8 $ show contentLength) <>
+                                        "\r\n\r\n" <>
+                                        png
+       "/images/fin.png"  -> do 
+                              png <- BS.readFile "frontend/images/fin.png"
+                              let contentLength = BS.length png 
+                              return $ 
+                                  (Types.version httpreq) <>
+                                  " 200 OK\r\n" <>
+                                  "Content: image/png\r\nConent-Lengh: " <> 
+                                  (BS.pack $ stringToWord8 $ show contentLength) <>
+                                  "\r\n\r\n" <>
+                                  png
+       "/images/marceline.png"  -> do 
+                                    png <- BS.readFile "frontend/images/marceline.png"
+                                    let contentLength = BS.length png 
+                                    return $ 
+                                        (Types.version httpreq) <>
+                                        " 200 OK\r\n" <>
+                                        "Content: image/png\r\nConent-Lengh: " <> 
+                                        (BS.pack $ stringToWord8 $ show contentLength) <>
+                                        "\r\n\r\n" <>
+                                        png
        
        _         -> return $ 
                      (Types.version httpreq) <> 

@@ -8,9 +8,36 @@ import Json.Decode as Decode exposing (..)
 import Json.Encode as Encode exposing (..)
 import Maybe exposing (withDefault)
 import Time as Time exposing (..)
+import Random as Random exposing (..)
+import Array as Array exposing (..)
 
 
 
+oneToX : Array a -> Random.Generator Int 
+oneToX a = Random.int 1 (Array.length a)
+
+pathToMyImage : String -> (Html Msg)
+pathToMyImage path = img
+         [src path
+         ,style "border-radius" "4px"
+         ,style "border" "1px solid #ddd"
+         ,style "padding" "5px"
+         ,style "height"  "80px"
+         ,style "width"    "80px"
+         ,style "position" "fixed"
+         ,style "left"     "50"
+         ,style "right"    "100"
+         ] 
+         []
+myImages : Array (Html Msg)
+myImages =  Array.fromList
+            [
+              pathToMyImage "/images/rootBeerAvatar.png"
+            , pathToMyImage "/images/jakeTheDog.jpg"
+            , pathToMyImage "/images/marceline.png"
+            , pathToMyImage "/images/bubblegum.png"
+            , pathToMyImage "/images/fin.png"
+            ]
 main = 
   Browser.element 
     { init = init
@@ -23,14 +50,14 @@ type alias Model =
            ,loading : Bool 
            ,textInput   : Request  
            ,success : Maybe ServerResponse 
-           ,switchImage : Bool
+           ,switchImage : Maybe Int
            } 
 initialModel =  
              {failure = False
              ,loading = False 
              ,textInput = {boolExpr = ""}
              ,success  = Nothing 
-             ,switchImage = False
+             ,switchImage = Just 0
              }
 type alias ServerResponse = 
       { parseError : String 
@@ -47,7 +74,8 @@ type Msg = Post
          | Operator Char 
          | Erase String 
          | Symbol Char
-         | SwitchImage 
+         | NewImage 
+         | ImageNumber Int
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
@@ -63,12 +91,13 @@ update msg model =
                            "delete"    -> ({model | textInput = {boolExpr = ""}},Cmd.none)
                            _           -> (model, Cmd.none)
     (Symbol sy)            -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar sy)}}, Cmd.none)
-    SwitchImage            -> ({model | switchImage = not <| model.switchImage}, Cmd.none)
+    (NewImage)           -> (model, Random.generate ImageNumber (oneToX myImages))
+    (ImageNumber i)      -> ({model | switchImage = Just i}, Cmd.none)
         
 
 
 subscriptions : Model -> Sub Msg 
-subscriptions model = Time.every (15 * 1000) (\_ -> SwitchImage) 
+subscriptions model = Time.every (15 * 1000) (\_ -> NewImage) 
 
 view : Model -> Html Msg 
 view model = 
@@ -96,34 +125,12 @@ view model =
       ] 
       [text "Submit"]
     ]
-  , case model.switchImage of 
-     True -> 
-       img 
-        [src "images/rootBeerAvatar.png"
-        ,style "border-radius" "4px"
-        ,style "border" "1px solid #ddd"
-        ,style "padding" "5px"
-        ,style "height"  "80px"
-        ,style "width"    "80px"
-        ,style "position" "fixed"
-        ,style "left"     "0"
-        ,style "right"    "0"
-        ]      
-        []
-     False ->  
-        img 
-         [src "images/jakeTheDog.jpg"
-         ,style "border-radius" "4px"
-         ,style "border" "1px solid #ddd"
-         ,style "padding" "5px"
-         ,style "height"  "80px"
-         ,style "width"    "80px"
-         ,style "position" "fixed"
-         ,style "left"     "50"
-         ,style "right"    "100"
-         ] 
-         []
   
+  , case model.switchImage of
+     Nothing  -> text ""
+     (Just i) -> case Array.get (i - 1) myImages of 
+                  Nothing  -> text ""
+                  (Just im) -> im
   ]
 calculator : Model -> Html Msg 
 calculator m = 
@@ -237,6 +244,6 @@ fromRequest request =
     
 resultDecoder : Decoder ServerResponse
 resultDecoder = 
-  map2 ServerResponse
+  Decode.map2 ServerResponse
    (field "parseError" Decode.string)
    (field "evaluation" Decode.string)
