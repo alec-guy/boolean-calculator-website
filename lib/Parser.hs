@@ -65,18 +65,18 @@ parseExpression :: Parser (Types.Expression Bool Bool)
 parseExpression = do 
     expr <- (myLexemeWrapper $ Expr.makeExprParser parseTerm table)
     return expr
-    where   table = [ [prefix ["~", "\x00AC"] (Types.One Types.notChar)
-                    ,prefix ["+"] (Types.One Types.idChar)
+    where   table = [ [prefix ["~", "\x00AC"] (Types.One Types.Not)
+                    ,prefix ["+"] (Types.One Types.Id)
                     ]
-                  , [binary0 ["&&","\x2227"] (Types.Product Types.andChar)] 
-                  , [binary1 ["||","\x2228"] (Types.Product Types.orChar)
-                    ,binary1 ["<->","\x2194"] (Types.Product Types.iffChar)
-                    ,binary1 ["->", "\x2192"] (Types.Product Types.ifThenChar)
+                  , [binary0 ["&&","\x2227"] (Types.Product Types.And)] 
+                  , [binary1 ["||","\x2228"] (Types.Product Types.Or)
+                    ,binary1 ["<->","\x2194"] (Types.Product Types.Iff)
+                    ,binary1 ["->", "\x2192"] (Types.Product Types.If)
                     ]
                   , 
-                    [binary2 ["nand"] (Types.Product Types.nandChar)
-                    ,binary2 ["nor", "\x22BB"] (Types.Product Types.norChar)
-                    ,binary2 ["xor"] (Types.Product Types.xOrChar)
+                    [binary2 ["nand"] (Types.Product Types.Nand)
+                    ,binary2 ["nor", "\x22BB"] (Types.Product Types.Nor)
+                    ,binary2 ["xor"] (Types.Product Types.Xor)
                     ]
                   ]
 

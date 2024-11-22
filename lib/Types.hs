@@ -13,41 +13,25 @@ import qualified Control.Monad as CM
 data BooleanOperation = Binary (BoolChar -> BoolChar -> Bool)
                       | Unary  (BoolChar -> Bool)
 -}
-data Binary a b = Binary (a -> a -> b)
-data Unary a b  = Unary (a -> b)
 
-makeBinary :: (Bool -> Bool -> Bool) -> Bool -> Bool -> Bool
-makeBinary f b b' = f b b'
-makeUnary :: (Bool -> Bool) -> Bool -> Bool 
-makeUnary f b = f b
-
+newtype Gate = And 
+              | Or 
+              | If 
+              | Iff 
+              | Xor 
+              | Nand 
+              | Nor 
+              | Not 
+              | Id 
+              deriving (Show, Eq)
 {-
 data BinaryT a = Leaf 
                | Node (BinaryT a) a (BinaryT a)
                deriving (Show, Eq) 
 -}
 data Expression a b = Constant a
-                    | Product (Binary a b) (Expression a b) (Expression a b)
-                    | One (Unary a b) (Expression a b)
-
-
-andChar = Binary $ makeBinary (&&)
-orChar = Binary $ makeBinary (||)
-ifThenChar = Binary $ makeBinary ifThen
-   where ifThen = \b b1 -> not $ b && (not b1)
-iffChar = Binary $ makeBinary iff
-   where iff = \b b2 -> b == b2
-xOrChar = Binary $ makeBinary xor 
-   where xor = \b b1 -> b /= b1
-nandChar = Binary $ makeBinary nand 
-   where nand = \b b1 -> not (b && b1)
-norChar = Binary $ makeBinary nor 
-   where nor = \b b1 -> (not b) && (not b1)
-notChar = Unary $ makeUnary not 
-idChar = Unary $ makeUnary id
-
-
-
+                    | Product Gate (Expression a b) (Expression a b)
+                    | One Gate (Expression a b)
 
 ---------------------------------
 ---     NETWORKING PORTION -----------
