@@ -186,7 +186,16 @@ makeHTTPResponse httpreq =
                      BS.putStr response 
                      SIO.hFlush SIO.stdout 
                      return $ response 
-   
+       "/images/rootBeerAvatar.png"  -> do 
+                                         png <- BS.readFile "frontend/images/rootBeerAvatar.png"
+                                         let contentLength = BS.length png 
+                                         return $ 
+                                           (Types.version httpreq) <>
+                                           " 200 OK\r\n" <>
+                                           "Content: image/png\r\nConent-Lengh: " <> 
+                                           (BS.pack $ stringToWord8 $ show contentLength) <>
+                                           "\r\n\r\n" <>
+                                           png
        _         -> return $ 
                      (Types.version httpreq) <> 
                      " 404 Not Found\r\n\r\n"

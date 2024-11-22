@@ -67,17 +67,19 @@ subscriptions model =
 
 view : Model -> Html Msg 
 view model = 
+  div []
+  [
   div 
     [id "div1"
     ,style "padding" "0 auto"
     ,style "max-width" "600px"
     ,style "margin" "0 auto" -- Center
-    ,style "background-color" "yellow"
+    ,style "background-color" "#332"
     ] 
     [h2 
      [id "title"
      ,style "text-align" "center"
-     ,style "color" "#333"
+     ,style "color" "white"
      ] 
      [text "Logic Calcluator"]
     ,viewServerResponse model 
@@ -89,6 +91,20 @@ view model =
       ] 
       [text "Submit"]
     ]
+  ,
+  img 
+       [src "images/rootBeerAvatar.png"
+       ,style "border-radius" "4px"
+       ,style "border" "1px solid #ddd"
+       ,style "padding" "5px"
+       ,style "height"  "80px"
+       ,style "width"    "80px"
+       ,style "position" "fixed"
+       ,style "left"     "0"
+       ,style "right"    "0"
+       ] 
+       []
+  ]
 calculator : Model -> Html Msg 
 calculator m = 
             div 
@@ -148,7 +164,7 @@ ourTextArea model =
                 , style "padding" "10px"
                 , style "height" "100px"
                 ]
-                [i [] [text model.textInput.boolExpr]
+                [i [style "color" "black"] [text model.textInput.boolExpr]
 
                 ]
               ]   
@@ -157,7 +173,7 @@ viewServerResponse : Model -> Html Msg
 viewServerResponse model = 
    case model.success of 
     Nothing -> div 
-               []
+               [style "color" "white"]
                [case model.loading of 
                  True  -> text "Loading"
                  False -> text ""
@@ -165,7 +181,7 @@ viewServerResponse model =
                ]
     (Just s) -> case s.evaluation of 
                  "Nothing" -> div 
-                              []
+                              [style "color" "white"]
                               [ case model.loading of 
                                  True -> text "Loading"
                                  False -> text ""
@@ -174,7 +190,7 @@ viewServerResponse model =
                               ,text s.parseError 
                               ]
                  _         -> div 
-                              []
+                              [style "color" "white"]
                               [case model.loading of 
                                 True  -> text "Loading"
                                 False -> text ""

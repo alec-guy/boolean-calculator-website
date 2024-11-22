@@ -6314,6 +6314,7 @@ var $elm$html$Html$Attributes$stringProperty = F2(
 			$elm$json$Json$Encode$string(string));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6330,6 +6331,12 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$html$Html$Events$on,
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
@@ -6411,7 +6418,10 @@ var $author$project$Main$ourTextArea = function (model) {
 					[
 						A2(
 						$elm$html$Html$i,
-						_List_Nil,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'color', 'black')
+							]),
 						_List_fromArray(
 							[
 								$elm$html$Html$text(model.textInput.boolExpr)
@@ -6598,7 +6608,10 @@ var $author$project$Main$viewServerResponse = function (model) {
 	if (_v0.$ === 'Nothing') {
 		return A2(
 			$elm$html$Html$div,
-			_List_Nil,
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'color', 'white')
+				]),
 			_List_fromArray(
 				[
 					function () {
@@ -6617,7 +6630,10 @@ var $author$project$Main$viewServerResponse = function (model) {
 		if (_v2 === 'Nothing') {
 			return A2(
 				$elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'color', 'white')
+					]),
 				_List_fromArray(
 					[
 						function () {
@@ -6635,7 +6651,10 @@ var $author$project$Main$viewServerResponse = function (model) {
 		} else {
 			return A2(
 				$elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'color', 'white')
+					]),
 				_List_fromArray(
 					[
 						function () {
@@ -6656,42 +6675,63 @@ var $author$project$Main$viewServerResponse = function (model) {
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$id('div1'),
-				A2($elm$html$Html$Attributes$style, 'padding', '0 auto'),
-				A2($elm$html$Html$Attributes$style, 'max-width', '600px'),
-				A2($elm$html$Html$Attributes$style, 'margin', '0 auto'),
-				A2($elm$html$Html$Attributes$style, 'background-color', 'yellow')
-			]),
+		_List_Nil,
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$h2,
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$id('title'),
-						A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-						A2($elm$html$Html$Attributes$style, 'color', '#333')
+						$elm$html$Html$Attributes$id('div1'),
+						A2($elm$html$Html$Attributes$style, 'padding', '0 auto'),
+						A2($elm$html$Html$Attributes$style, 'max-width', '600px'),
+						A2($elm$html$Html$Attributes$style, 'margin', '0 auto'),
+						A2($elm$html$Html$Attributes$style, 'background-color', '#332')
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Logic Calcluator')
+						A2(
+						$elm$html$Html$h2,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$id('title'),
+								A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
+								A2($elm$html$Html$Attributes$style, 'color', 'white')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Logic Calcluator')
+							])),
+						$author$project$Main$viewServerResponse(model),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Main$Post),
+								A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
+								A2($elm$html$Html$Attributes$style, 'color', 'white'),
+								A2($elm$html$Html$Attributes$style, 'border', 'none')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Submit')
+							]))
 					])),
-				$author$project$Main$viewServerResponse(model),
 				A2(
-				$elm$html$Html$button,
+				$elm$html$Html$img,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$Post),
-						A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
-						A2($elm$html$Html$Attributes$style, 'color', 'white'),
-						A2($elm$html$Html$Attributes$style, 'border', 'none')
+						$elm$html$Html$Attributes$src('images/rootBeerAvatar.png'),
+						A2($elm$html$Html$Attributes$style, 'border-radius', '4px'),
+						A2($elm$html$Html$Attributes$style, 'border', '1px solid #ddd'),
+						A2($elm$html$Html$Attributes$style, 'padding', '5px'),
+						A2($elm$html$Html$Attributes$style, 'height', '80px'),
+						A2($elm$html$Html$Attributes$style, 'width', '80px'),
+						A2($elm$html$Html$Attributes$style, 'position', 'fixed'),
+						A2($elm$html$Html$Attributes$style, 'left', '0'),
+						A2($elm$html$Html$Attributes$style, 'right', '0')
 					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Submit')
-					]))
+				_List_Nil)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
