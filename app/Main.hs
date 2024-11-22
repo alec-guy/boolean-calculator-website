@@ -236,6 +236,36 @@ makeHTTPResponse httpreq =
                                         (BS.pack $ stringToWord8 $ show contentLength) <>
                                         "\r\n\r\n" <>
                                         png
+       "/audio/theme"           -> do 
+                                    mp3 <- BS.readFile "frontend/sounds/themeSong.mp3"
+                                    let contentLength = BS.length mp3
+                                    return $ 
+                                        (Types.version httpreq) <>
+                                        " 200 OK\r\n" <>
+                                        "Content: audio/mpeg\r\nConent-Lengh: " <> 
+                                        (BS.pack $ stringToWord8 $ show contentLength) <>
+                                        "\r\n\r\n" <>
+                                        mp3
+       "/audio/baby"           -> do 
+                                    mp3 <- BS.readFile "frontend/sounds/im-a-tough-tooting-baby.mp3"
+                                    let contentLength = BS.length mp3
+                                    return $ 
+                                        (Types.version httpreq) <>
+                                        " 200 OK\r\n" <>
+                                        "Content: audio/mpeg\r\nConent-Lengh: " <> 
+                                        (BS.pack $ stringToWord8 $ show contentLength) <>
+                                        "\r\n\r\n" <>
+                                        mp3
+       "/audio/jake-fart"      -> do 
+                                   mp3 <- BS.readFile "frontend/sounds/jake-fart.mp3"
+                                   let contentLength = BS.length mp3
+                                   return $ 
+                                        (Types.version httpreq) <>
+                                        " 200 OK\r\n" <>
+                                        "Content: audio/mpeg\r\nConent-Lengh: " <> 
+                                        (BS.pack $ stringToWord8 $ show contentLength) <>
+                                        "\r\n\r\n" <>
+                                        mp3
        
        _         -> return $ 
                      (Types.version httpreq) <> 

@@ -5434,6 +5434,7 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Main$initialModel = {
 	failure: false,
 	loading: false,
+	soundNumber: $elm$core$Maybe$Just(1),
 	success: $elm$core$Maybe$Nothing,
 	switchImage: $elm$core$Maybe$Just(1),
 	textInput: {boolExpr: ''}
@@ -5870,6 +5871,9 @@ var $author$project$Main$subscriptions = function (model) {
 var $author$project$Main$ImageNumber = function (a) {
 	return {$: 'ImageNumber', a: a};
 };
+var $author$project$Main$SoundNumber = function (a) {
+	return {$: 'SoundNumber', a: a};
+};
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -6007,7 +6011,19 @@ var $elm$core$Array$fromList = function (list) {
 		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
 	}
 };
-var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$audio = _VirtualDom_node('audio');
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$autoplay = $elm$html$Html$Attributes$boolProperty('autoplay');
+var $elm$html$Html$Attributes$controls = $elm$html$Html$Attributes$boolProperty('controls');
+var $elm$html$Html$Attributes$default = $elm$html$Html$Attributes$boolProperty('default');
+var $elm$html$Html$Attributes$hidden = $elm$html$Html$Attributes$boolProperty('hidden');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6022,6 +6038,51 @@ var $elm$html$Html$Attributes$src = function (url) {
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
+var $author$project$Main$pathToMyAudio = function (path) {
+	return A2(
+		$elm$html$Html$audio,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$src(path),
+				$elm$html$Html$Attributes$hidden(true),
+				$elm$html$Html$Attributes$autoplay(true),
+				$elm$html$Html$Attributes$controls(false),
+				$elm$html$Html$Attributes$default(true)
+			]),
+		_List_Nil);
+};
+var $author$project$Main$myAudio = $elm$core$Array$fromList(
+	_List_fromArray(
+		[
+			$author$project$Main$pathToMyAudio('/audio/theme'),
+			$author$project$Main$pathToMyAudio('/audio/baby'),
+			$author$project$Main$pathToMyAudio('/audio/jake-fart')
+		]));
+var $author$project$Main$AdventureTimeSound = {$: 'AdventureTimeSound'};
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $elm$html$Html$Events$onMouseOver = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'mouseover',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $author$project$Main$pathToMyImage = function (path) {
@@ -6034,7 +6095,9 @@ var $author$project$Main$pathToMyImage = function (path) {
 				A2($elm$html$Html$Attributes$style, 'border', '1px solid #ddd'),
 				A2($elm$html$Html$Attributes$style, 'height', '80px'),
 				A2($elm$html$Html$Attributes$style, 'width', '80px'),
-				A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
+				A2($elm$html$Html$Attributes$style, 'margin', '0 auto'),
+				$elm$html$Html$Events$onMouseOver($author$project$Main$AdventureTimeSound),
+				$elm$html$Html$Events$onClick($author$project$Main$AdventureTimeSound)
 			]),
 		_List_Nil);
 };
@@ -6882,13 +6945,29 @@ var $author$project$Main$update = F2(
 						$elm$random$Random$generate,
 						$author$project$Main$ImageNumber,
 						$author$project$Main$oneToX($author$project$Main$myImages)));
-			default:
+			case 'ImageNumber':
 				var i = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
 							switchImage: $elm$core$Maybe$Just(i)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'AdventureTimeSound':
+				return _Utils_Tuple2(
+					model,
+					A2(
+						$elm$random$Random$generate,
+						$author$project$Main$SoundNumber,
+						$author$project$Main$oneToX($author$project$Main$myAudio)));
+			default:
+				var i = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							soundNumber: $elm$core$Maybe$Just(i)
 						}),
 					$elm$core$Platform$Cmd$none);
 		}
@@ -6976,23 +7055,6 @@ var $elm$html$Html$button = _VirtualDom_node('button');
 var $author$project$Main$ifThen = _Utils_chr('\u2192');
 var $author$project$Main$iff = _Utils_chr('\u2194');
 var $author$project$Main$notChar = _Utils_chr('\u00AC');
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Main$or = _Utils_chr('\u2228');
 var $author$project$Main$TextInput = function (a) {
 	return {$: 'TextInput', a: a};
@@ -7368,6 +7430,21 @@ var $author$project$Main$view = function (model) {
 					} else {
 						var im = _v1.a;
 						return im;
+					}
+				}
+			}(),
+				function () {
+				var _v2 = model.soundNumber;
+				if (_v2.$ === 'Nothing') {
+					return $elm$html$Html$text('');
+				} else {
+					var i = _v2.a;
+					var _v3 = A2($elm$core$Array$get, i - 1, $author$project$Main$myAudio);
+					if (_v3.$ === 'Nothing') {
+						return $elm$html$Html$text('');
+					} else {
+						var au = _v3.a;
+						return au;
 					}
 				}
 			}()

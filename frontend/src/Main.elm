@@ -16,6 +16,8 @@ import Array as Array exposing (..)
 oneToX : Array a -> Random.Generator Int 
 oneToX a = Random.int 1 (Array.length a)
 
+
+
 pathToMyImage : String -> (Html Msg)
 pathToMyImage path = img
          [src path
@@ -24,8 +26,26 @@ pathToMyImage path = img
          ,style "height"  "80px"
          ,style "width"    "80px"
          ,style "margin" "0 auto"
+         ,onMouseOver AdventureTimeSound
+         ,onClick AdventureTimeSound
          ] 
          []
+pathToMyAudio : String -> (Html Msg)
+pathToMyAudio path = audio 
+         [src path
+         ,hidden True 
+         ,autoplay True
+         ,controls False
+         ,default True 
+         ]
+         []
+  
+myAudio : Array (Html Msg)
+myAudio = Array.fromList 
+        [pathToMyAudio  "/audio/theme"
+        ,pathToMyAudio "/audio/baby"
+        ,pathToMyAudio "/audio/jake-fart"
+        ]
 myImages : Array (Html Msg)
 myImages =  Array.fromList
             [
@@ -48,6 +68,7 @@ type alias Model =
            ,textInput   : Request  
            ,success : Maybe ServerResponse 
            ,switchImage : Maybe Int
+           ,soundNumber : Maybe Int 
            } 
 initialModel =  
              {failure = False
@@ -55,6 +76,7 @@ initialModel =
              ,textInput = {boolExpr = ""}
              ,success  = Nothing 
              ,switchImage = Just 1
+             ,soundNumber = Just 1 
              }
 type alias ServerResponse = 
       { parseError : String 
@@ -73,6 +95,8 @@ type Msg = Post
          | Symbol Char
          | NewImage 
          | ImageNumber Int
+         | AdventureTimeSound
+         | SoundNumber Int 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
@@ -90,6 +114,8 @@ update msg model =
     (Symbol sy)            -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar sy)}}, Cmd.none)
     (NewImage)           -> (model, Random.generate ImageNumber (oneToX myImages))
     (ImageNumber i)      -> ({model | switchImage = Just i}, Cmd.none)
+    AdventureTimeSound   -> (model, Random.generate SoundNumber (oneToX myAudio))
+    (SoundNumber i)      -> ({model | soundNumber = Just i}, Cmd.none)
         
 
 
@@ -129,6 +155,11 @@ view model =
      (Just i) -> case Array.get (i - 1) myImages of 
                   Nothing  -> text ""
                   (Just im) -> im
+  , case model.soundNumber of 
+     Nothing -> text ""
+     Just i  -> case Array.get (i - 1) myAudio of 
+                 Nothing -> text ""
+                 (Just au) -> au
   ]
 calculator : Model -> Html Msg 
 calculator m = 
