@@ -15,3 +15,6 @@ data Gate a = And (Gate a) (Gate a)
             deriving (Show, Eq)
 
 
+
+
+

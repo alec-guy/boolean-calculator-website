@@ -4,11 +4,9 @@
 module Main where
 
 import qualified Control.Concurrent as Concurrent
-import qualified System.Exit 
 import HTTPParser 
 import HTTPTypes 
 import LogicParser 
-import LogicTypes 
 import qualified System.IO as SIO
 import qualified Control.Exception as CE
 import qualified Evaluator as Evaluator
