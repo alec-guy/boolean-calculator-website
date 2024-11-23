@@ -27,25 +27,9 @@ pathToMyImage path = img
          ,Attr.style "height"  "80px"
          ,Attr.style "width"    "80px"
          ,Attr.style "margin" "0 auto"
-         ,onMouseOver AdventureTimeSound
          ] 
          []
-pathToMyAudio : String -> (Html Msg)
-pathToMyAudio path = audio 
-         [src path
-         ,hidden True 
-         ,autoplay True
-         ,controls False
-         ,default True 
-         ]
-         []
-  
-myAudio : Array (Html Msg)
-myAudio = Array.fromList 
-        [pathToMyAudio  "/audio/theme"
-        ,pathToMyAudio "/audio/baby"
-        ,pathToMyAudio "/audio/jake-fart"
-        ]
+
 myImages : Array (Html Msg)
 myImages =  Array.fromList
             [
@@ -98,8 +82,6 @@ type Msg = Post
          | Symbol Char
          | NewImage 
          | ImageNumber Int
-         | AdventureTimeSound
-         | SoundNumber Int 
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
@@ -126,8 +108,7 @@ update msg model =
     (Symbol sy)            -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar sy)}}, Cmd.none)
     (NewImage)           -> (model, Random.generate ImageNumber (oneToX myImages))
     (ImageNumber i)      -> ({model | selectImage = Just i}, Cmd.none)
-    AdventureTimeSound   -> (model, Random.generate SoundNumber (oneToX myAudio))
-    (SoundNumber i)      -> ({model | soundNumber = Just i}, Cmd.none)
+
         
 
 
