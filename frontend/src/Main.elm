@@ -24,8 +24,6 @@ oneToX a = Random.int 1 (Array.length a)
 pathToMyImage : String -> (Html Msg)
 pathToMyImage path = img
          [src path
-         ,Attr.style "border-radius" "4px"
-         ,Attr.style "border" "1px solid #ddd"
          ,Attr.style "height"  "80px"
          ,Attr.style "width"    "80px"
          ,Attr.style "margin" "0 auto"
@@ -69,16 +67,18 @@ type alias Model =
            ,loading : Bool 
            ,textInput   : Request  
            ,success : Maybe ServerResponse 
-           ,switchImage : Maybe Int
+           ,selectImage : Maybe Int
            ,soundNumber : Maybe Int 
+           ,successfulExpression : String
            } 
 initialModel =  
              {failure = False
              ,loading = False 
              ,textInput = {boolExpr = ""}
              ,success  = Nothing 
-             ,switchImage = Just 1
+             ,selectImage = Just 1
              ,soundNumber = Just 1 
+             ,successfulExpression = ""
              }
 type alias ServerResponse = 
       { parseError   : String 
@@ -106,17 +106,26 @@ update msg model =
    case msg of 
     Post -> ({model | loading = True}, postRequest model.textInput)
     (GotResult result) -> case result of 
-                            Ok r -> ({model | success = Just r , loading = False}, Cmd.none)
+                            Ok r -> ({model | success = Just r 
+                                     , loading = False
+                                     , successfulExpression = model.textInput.boolExpr ++ " = " ++ (if r.evaluation == "Nothing" then "" else r.evaluation) 
+                                     } 
+                                     , Cmd.none
+                                     )
                             (Err _) ->  ({model | failure = True ,loading = False}, Cmd.none)
     (TextInput s)      -> ({model | textInput = {boolExpr = s }}, Cmd.none)
     (Operator c)       -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar c)}}, Cmd.none)
     (Erase st)         -> case st of 
                            "backspace" -> ({model | textInput = {boolExpr = String.dropRight 1 model.textInput.boolExpr}}, Cmd.none)
-                           "delete"    -> ({model | textInput = {boolExpr = ""}},Cmd.none)
+                           "delete"    -> ({model | textInput = {boolExpr = ""}
+                                           , successfulExpression = ""
+                                           }
+                                           ,Cmd.none
+                                           )
                            _           -> (model, Cmd.none)
     (Symbol sy)            -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar sy)}}, Cmd.none)
     (NewImage)           -> (model, Random.generate ImageNumber (oneToX myImages))
-    (ImageNumber i)      -> ({model | switchImage = Just i}, Cmd.none)
+    (ImageNumber i)      -> ({model | selectImage = Just i}, Cmd.none)
     AdventureTimeSound   -> (model, Random.generate SoundNumber (oneToX myAudio))
     (SoundNumber i)      -> ({model | soundNumber = Just i}, Cmd.none)
         
@@ -125,101 +134,103 @@ update msg model =
 subscriptions : Model -> Sub Msg 
 subscriptions model = Time.every (15 * 1000) (\_ -> NewImage) 
 
-myFooter : Html Msg 
-myFooter = 
-   Html.footer 
-   [Attr.style "border" "solid"
-   ,Attr.style "background-color" "red"
+
+header : Html Msg 
+header = 
+     h1 
+     [ Attr.style "position" "absolute"
+     , Attr.style "top" "0vh" 
+     , Attr.style "width" "50vw"
+     , Attr.style "height" "5vh"
+     , Attr.style "right"  "50vw"
+      
+     ] 
+     [i [] [Html.text "Logic Calculator"]] 
+
+display : Model -> Html Msg 
+display model = 
+   div 
+   [Attr.style "position" "absolute"
+   ,Attr.style "background-color" "lightyellow"
+   ,Attr.style "height" "130px"
+   ,Attr.style "width"  "330px"
+   ,Attr.style "left" "39vw"
+   ,Attr.style "top"  "30vh"
+   ,Attr.style "border-style" "solid"
    ]
-   [ Html.a 
-    [Attr.href "https://github.com/alec-guy"]
-    [Html.text "contact me here if you want to cringe"]
+   [ Html.text model.textInput.boolExpr
+   , br [] []
+   , Html.text model.successfulExpression 
+   , case model.success of 
+      Nothing -> Html.text ""
+      (Just response) -> case response.evaluation of 
+                          "Nothing" -> Html.text "Error : Parsing"
+                          _         -> Html.text ""
    ]
-myHeader : Html Msg 
-myHeader = 
-    Html.header 
-    [Attr.id "title"
-    ,Attr.style "text-align" "center"
-    ,Attr.style "color" "black"
-    ] 
-    [ h2 
-       [ Attr.style "text-align" "center"
-       ,Attr.style "color" "black"
-       ] 
-     [Html.text "Logic Calcluator"] 
-    ]
+   
+buttonGrid : Html Msg 
+buttonGrid = 
+   div 
+   [ Attr.style "position" "absolute"
+   , Attr.style "top" "50vh"
+   , Attr.style "left" "39vw"
+   , Attr.style "width" "150px"
+   , Attr.style "height" "200px"
+   , Attr.style "display" "grid"
+   , Attr.style "grid-template-columns" "repeat(4,75px)"
+   , Attr.style "grid-template-rows"    "repeat(5,60px)"
+   , Attr.style "gap" "10px"
+   ]
+   [ button [onClick <| Operator 'T'] [Html.text "T"]
+   , button [onClick <| Operator 'F'] [Html.text "F"] 
+   , button [onClick <| Operator and] [Html.text <| String.fromChar and]
+   , button [onClick <| Operator or] [Html.text <| String.fromChar or]
+   , button [onClick <| Operator notChar] [Html.text <| String.fromChar notChar]
+   , button [onClick <| Operator ifThen] [Html.text <| String.fromChar ifThen]
+   , button [onClick <| Operator iff] [Html.text <| String.fromChar iff]
+   , button [onClick <| Operator nand] [Html.text <| String.fromChar nand]
+   , button [onClick <| Operator nor] [Html.text <| String.fromChar nor]
+   , button [onClick <| Operator xor] [Html.text <| String.fromChar xor]
+   , button [onClick <| Erase "delete"] [Html.text "<- Delete"] 
+   , button [onClick Post] [Html.text "<- Enter"]
+   , button [onClick <| Erase "backspace"] [Html.text "<- Backspace"]
+   , button [onClick <| Operator ' '] [Html.text "     "]
+   ]
+{-
+calculatorDisplay : Html Msg
+calculatorDisplay = 
+-}
 view : Model -> Html Msg 
 view model = 
-  div []
-  [ myHeader
-  ,div 
-    [Attr.id "div1"
-    ,Attr.style "padding" "0 auto"
-    ,Attr.style "max-width" "600px"
-    ,Attr.style "margin" "0 auto" -- Center
-    ,Attr.style "background-color" "#332"
-    ] 
-    [ viewServerResponse model 
-    , myFooter
+     div 
+     [ 
+      Attr.style "width" "100vw"
+     ,Attr.style "height" "100vh"
+     ,Attr.style "background-color" "grey"
+     ,Attr.style "position" "relative"
+      
+     ] 
+     [ header
+     , display model
+     , buttonGrid
+     , myDivPicture model
+     ]
+myDivPicture : Model -> Html Msg
+myDivPicture model = 
+    div 
+    [Attr.style "position" "relative"
+    ,Attr.style "top" "10vh"
+    ,Attr.style "left" "0"]
+    [
+      case selectPicture model of 
+       Nothing          -> Html.text "Error cannot find image"
+       (Just im)       -> im 
     ]
-  
-  
-  , case model.switchImage of
-     Nothing  -> Html.text ""
-     (Just i) -> case Array.get (i - 1) myImages of 
-                  Nothing  -> Html.text ""
-                  (Just im) -> im
-  , case model.soundNumber of 
-     Nothing -> Html.text ""
-     Just i  -> case Array.get (i - 1) myAudio of 
-                 Nothing -> Html.text ""
-                 (Just au) -> au
-  ]
-
-
-calculator : Model -> Html Msg 
-calculator m = 
-            div 
-            [Attr.id "calculator"
-            ,Attr.style "background-color" "blue"
-            ,Attr.style "padding" "20px"
-            ,Attr.style "border-raidus" "20px" --rounded corners
-            ,Attr.style "box-shadow" "0 4px 8px rgba(0,0,0,0.2)"
-            ]
-            [
-             div 
-             [Attr.id "display"]
-             [ourTextArea m]
-            ,div 
-             [Attr.id "button grid"
-             ,Attr.style "display" "grid"
-             ,Attr.style "grid-template-columns" "auto auto auto auto"
-             ,Attr.style "gap" "10px"
-             ]
-             [button [onClick <| (Operator 'T')]   [Html.text "T"]
-             ,button [onClick <| (Operator 'F')]   [Html.text "F"]
-             ,button [onClick <| (Operator notChar)] [Html.text "\u{00AC}"]
-             ,button [Attr.style "background-color" "yellow" , onClick <| (Operator and)] [Html.text "\u{2227}"]
-             ,button [onClick <| (Operator or)] [Html.text "\u{2228}"] 
-             ,button [onClick <| (Operator ifThen)] [Html.text "\u{2192}"] 
-             ,button [onClick <| (Operator iff)] [Html.text "\u{2194}"]
-             ,button [onClick <| (Operator xor)] [Html.text "\u{2295}"]
-             ,button [onClick <| (Operator nand)] [Html.text "\u{22BC}"]
-             ,button [onClick <| (Operator nor)]  [Html.text "\u{22BD}"]
-             ,button [Attr.style "background-color" "red" , onClick <| (Symbol '(')] [Html.text "("]
-             ,button [onClick <| (Symbol ')')] [Html.text ")"]
-             ,button [onClick <| (Erase "backspace")] [Html.text "<- backspace"]
-             ,button [Attr.style "background-color" "green" , onClick <| (Erase "delete")]    [Html.text "NUKE"]
-             ,button [onClick <| (Symbol ' ')] [Html.text "space"]
-             , button 
-                [onClick Post
-                ,Attr.style "background-color" "orange"
-                ,Attr.style "color" "white"
-                ,Attr.style "border" "none"
-                ] 
-                [Html.text "Enter ->"]
-            ]
-            ]
+selectPicture : Model -> Maybe (Html Msg)
+selectPicture model = 
+     case model.selectImage of
+        Nothing       -> Nothing
+        (Just number) -> Array.get number myImages
 
 ifThen : Char 
 ifThen = '\u{2192}'
@@ -248,111 +259,14 @@ nor = '\u{22BD}'
      ]
 
 -}
--- first argument to end of makeGate 
-fromSvg : List (Svg Msg) -> Html Msg 
-fromSvg l = 
-     S.svg
-     [SA.viewBox  "0 0 200 150"
-     ,SA.width "400px"
-     ,SA.height "400px"
-     ]
-     l 
 
-makeGate : (Int,Int) -> (String , Bool) -> List (Svg Msg)
-makeGate (x, y) (gate1, gateOut1) =  
-     [
-      S.line 
-      [SA.x1 <| String.fromInt <| 180 - x 
-      ,SA.y1 <| String.fromInt <| 100 + y
-      ,SA.x2 <| String.fromInt <| 200 - x 
-      ,SA.y2 <| String.fromInt <| 100 + y 
-      ,if gateOut1 then SA.stroke "green" else SA.stroke "red"
-      ] 
-      []
-     , S.rect
-      [SA.height "20"
-      ,SA.width "20"
-      ,SA.x <| String.fromInt <| 180 - x 
-      ,SA.y <| String.fromInt <| 100 + y
-      ,SA.fill <| if gateOut1 then "green" else "red"
-      ]
-      [S.text gate1]
-     ]
-gateDrawer : ((Int,Int) -> (String , Bool) -> List (Svg Msg)) 
-           -> (List (String, Bool)) 
-           -> (Int,Int)
-           -> List (List (Svg Msg))
-gateDrawer g l t = 
-     case List.isEmpty l of 
-      True -> [] 
-      False -> (makeGate t (withDefault ("",True) (List.head l))) :: (gateDrawer g (List.drop 1 l) ((Tuple.first t)- 1,(Tuple.second t) + 1))
-     
-
-
-       
-        
-ourTextArea : Model -> Html Msg 
-ourTextArea model = 
-              div 
-              [Attr.id "div2"
-              ,Attr.style "background-color" "lightgray"
-              ,Attr.style "padding" "16px"
-              ]
-              [ div
-                [ onInput TextInput
-                , Attr.title "Enter Expression Here"
-                , Attr.style "width" "100%"
-                , Attr.style "padding" "10px"
-                , Attr.style "height" "100px"
-                ]
-                [i [Attr.style "color" "black"] 
-                 [Html.text model.textInput.boolExpr
-                 , br [] []
-                 , br [] []
-                 ,case model.success of 
-                   Nothing -> Html.text "Error :("
-                   (Just r) -> case r.evaluation of 
-                                "Nothing" -> Html.text r.parseError 
-                                _         -> div
-                                              [] 
-                                               [i [Attr.style "color" "red"]
-                                                  [Html.text r.evaluation
-                                                  ]
-                                               , fromSvg <| List.concat <| gateDrawer makeGate r.gatesAndOuts (0,0) 
-                                                 
-                                               ]
-                 ]
-                ]
-              ]   
+                        
 fromBool  : Bool -> String 
 fromBool b = case b of 
               True  -> "True"  
               False -> "False" 
-viewServerResponse : Model -> Html Msg 
-viewServerResponse model = 
-   case model.success of 
-    Nothing -> div 
-               [Attr.style "color" "white"]
-               [case model.loading of 
-                 True  -> Html.text "Loading"
-                 False -> Html.text ""
-               ,calculator model
-               ]
-    (Just s) -> case s.evaluation of 
-                 "Nothing" -> div 
-                              [Attr.style "color" "white"]
-                              [ case model.loading of 
-                                 True -> Html.text "Loading"
-                                 False -> Html.text ""
-                              ,calculator model
-                              ]
-                 _         -> div 
-                              [Attr.style "color" "white"]
-                              [case model.loading of 
-                                True  -> Html.text "Loading"
-                                False -> Html.text ""
-                              ,calculator model
-                              ]
+
+      
 postRequest : Request -> Cmd Msg 
 postRequest request = 
    Http.post 

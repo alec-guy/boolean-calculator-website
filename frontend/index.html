@@ -5434,9 +5434,10 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Main$initialModel = {
 	failure: false,
 	loading: false,
+	selectImage: $elm$core$Maybe$Just(1),
 	soundNumber: $elm$core$Maybe$Just(1),
 	success: $elm$core$Maybe$Nothing,
-	switchImage: $elm$core$Maybe$Just(1),
+	successfulExpression: '',
 	textInput: {boolExpr: ''}
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -6085,8 +6086,6 @@ var $author$project$Main$pathToMyImage = function (path) {
 		_List_fromArray(
 			[
 				$elm$html$Html$Attributes$src(path),
-				A2($elm$html$Html$Attributes$style, 'border-radius', '4px'),
-				A2($elm$html$Html$Attributes$style, 'border', '1px solid #ddd'),
 				A2($elm$html$Html$Attributes$style, 'height', '80px'),
 				A2($elm$html$Html$Attributes$style, 'width', '80px'),
 				A2($elm$html$Html$Attributes$style, 'margin', '0 auto'),
@@ -6877,7 +6876,8 @@ var $author$project$Main$update = F2(
 							model,
 							{
 								loading: false,
-								success: $elm$core$Maybe$Just(r)
+								success: $elm$core$Maybe$Just(r),
+								successfulExpression: model.textInput.boolExpr + (' = ' + ((r.evaluation === 'Nothing') ? '' : r.evaluation))
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -6927,6 +6927,7 @@ var $author$project$Main$update = F2(
 							_Utils_update(
 								model,
 								{
+									successfulExpression: '',
 									textInput: {boolExpr: ''}
 								}),
 							$elm$core$Platform$Cmd$none);
@@ -6959,7 +6960,7 @@ var $author$project$Main$update = F2(
 					_Utils_update(
 						model,
 						{
-							switchImage: $elm$core$Maybe$Just(i)
+							selectImage: $elm$core$Maybe$Just(i)
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'AdventureTimeSound':
@@ -6980,7 +6981,269 @@ var $author$project$Main$update = F2(
 					$elm$core$Platform$Cmd$none);
 		}
 	});
+var $author$project$Main$Erase = function (a) {
+	return {$: 'Erase', a: a};
+};
+var $author$project$Main$Operator = function (a) {
+	return {$: 'Operator', a: a};
+};
+var $author$project$Main$Post = {$: 'Post'};
+var $author$project$Main$and = _Utils_chr('\u2227');
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $author$project$Main$ifThen = _Utils_chr('\u2192');
+var $author$project$Main$iff = _Utils_chr('\u2194');
+var $author$project$Main$nand = _Utils_chr('\u22BC');
+var $author$project$Main$nor = _Utils_chr('\u22BD');
+var $author$project$Main$notChar = _Utils_chr('\u00AC');
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Main$or = _Utils_chr('\u2228');
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$xor = _Utils_chr('\u2295');
+var $author$project$Main$buttonGrid = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+			A2($elm$html$Html$Attributes$style, 'top', '50vh'),
+			A2($elm$html$Html$Attributes$style, 'left', '39vw'),
+			A2($elm$html$Html$Attributes$style, 'width', '150px'),
+			A2($elm$html$Html$Attributes$style, 'height', '200px'),
+			A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+			A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(4,75px)'),
+			A2($elm$html$Html$Attributes$style, 'grid-template-rows', 'repeat(5,60px)'),
+			A2($elm$html$Html$Attributes$style, 'gap', '10px')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator(
+						_Utils_chr('T')))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('T')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator(
+						_Utils_chr('F')))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('F')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$and))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$and))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$or))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$or))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$notChar))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$notChar))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$ifThen))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$ifThen))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$iff))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$iff))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$nand))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$nand))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$nor))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$nor))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator($author$project$Main$xor))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					$elm$core$String$fromChar($author$project$Main$xor))
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Erase('delete'))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<- Delete')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick($author$project$Main$Post)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<- Enter')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Erase('backspace'))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('<- Backspace')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Main$Operator(
+						_Utils_chr(' ')))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('     ')
+				]))
+		]));
+var $elm$html$Html$br = _VirtualDom_node('br');
+var $author$project$Main$display = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+				A2($elm$html$Html$Attributes$style, 'background-color', 'lightyellow'),
+				A2($elm$html$Html$Attributes$style, 'height', '130px'),
+				A2($elm$html$Html$Attributes$style, 'width', '330px'),
+				A2($elm$html$Html$Attributes$style, 'left', '39vw'),
+				A2($elm$html$Html$Attributes$style, 'top', '30vh'),
+				A2($elm$html$Html$Attributes$style, 'border-style', 'solid')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(model.textInput.boolExpr),
+				A2($elm$html$Html$br, _List_Nil, _List_Nil),
+				$elm$html$Html$text(model.successfulExpression),
+				function () {
+				var _v0 = model.success;
+				if (_v0.$ === 'Nothing') {
+					return $elm$html$Html$text('');
+				} else {
+					var response = _v0.a;
+					var _v1 = response.evaluation;
+					if (_v1 === 'Nothing') {
+						return $elm$html$Html$text('Error : Parsing');
+					} else {
+						return $elm$html$Html$text('');
+					}
+				}
+			}()
+			]));
+};
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $elm$html$Html$i = _VirtualDom_node('i');
+var $author$project$Main$header = A2(
+	$elm$html$Html$h1,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+			A2($elm$html$Html$Attributes$style, 'top', '0vh'),
+			A2($elm$html$Html$Attributes$style, 'width', '50vw'),
+			A2($elm$html$Html$Attributes$style, 'height', '5vh'),
+			A2($elm$html$Html$Attributes$style, 'right', '50vw')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$i,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Logic Calculator')
+				]))
+		]));
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
@@ -7021,689 +7284,53 @@ var $elm$core$Array$get = F2(
 			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$footer = _VirtualDom_node('footer');
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$myFooter = A2(
-	$elm$html$Html$footer,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'border', 'solid'),
-			A2($elm$html$Html$Attributes$style, 'background-color', 'red')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$a,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$href('https://github.com/alec-guy')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('contact me here if you want to cringe')
-				]))
-		]));
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
-var $elm$html$Html$header = _VirtualDom_node('header');
-var $author$project$Main$myHeader = A2(
-	$elm$html$Html$header,
-	_List_fromArray(
-		[
-			$elm$html$Html$Attributes$id('title'),
-			A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-			A2($elm$html$Html$Attributes$style, 'color', 'black')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$h2,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'text-align', 'center'),
-					A2($elm$html$Html$Attributes$style, 'color', 'black')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Logic Calcluator')
-				]))
-		]));
-var $author$project$Main$Erase = function (a) {
-	return {$: 'Erase', a: a};
-};
-var $author$project$Main$Operator = function (a) {
-	return {$: 'Operator', a: a};
-};
-var $author$project$Main$Post = {$: 'Post'};
-var $author$project$Main$Symbol = function (a) {
-	return {$: 'Symbol', a: a};
-};
-var $author$project$Main$and = _Utils_chr('\u2227');
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $author$project$Main$ifThen = _Utils_chr('\u2192');
-var $author$project$Main$iff = _Utils_chr('\u2194');
-var $author$project$Main$nand = _Utils_chr('\u22BC');
-var $author$project$Main$nor = _Utils_chr('\u22BD');
-var $author$project$Main$notChar = _Utils_chr('\u00AC');
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Main$or = _Utils_chr('\u2228');
-var $author$project$Main$TextInput = function (a) {
-	return {$: 'TextInput', a: a};
-};
-var $elm$html$Html$br = _VirtualDom_node('br');
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
-var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
-var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
-var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
-var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
-var $author$project$Main$fromSvg = function (l) {
-	return A2(
-		$elm$svg$Svg$svg,
-		_List_fromArray(
-			[
-				$elm$svg$Svg$Attributes$viewBox('0 0 200 150'),
-				$elm$svg$Svg$Attributes$width('400px'),
-				$elm$svg$Svg$Attributes$height('400px')
-			]),
-		l);
-};
-var $elm$core$List$drop = F2(
-	function (n, list) {
-		drop:
-		while (true) {
-			if (n <= 0) {
-				return list;
-			} else {
-				if (!list.b) {
-					return list;
-				} else {
-					var x = list.a;
-					var xs = list.b;
-					var $temp$n = n - 1,
-						$temp$list = xs;
-					n = $temp$n;
-					list = $temp$list;
-					continue drop;
-				}
-			}
-		}
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
-var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
-var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
-var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
-var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
-var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
-var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
-var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
-var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
-var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
-var $author$project$Main$makeGate = F2(
-	function (_v0, _v1) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var gate1 = _v1.a;
-		var gateOut1 = _v1.b;
-		return _List_fromArray(
-			[
-				A2(
-				$elm$svg$Svg$line,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$x1(
-						$elm$core$String$fromInt(180 - x)),
-						$elm$svg$Svg$Attributes$y1(
-						$elm$core$String$fromInt(100 + y)),
-						$elm$svg$Svg$Attributes$x2(
-						$elm$core$String$fromInt(200 - x)),
-						$elm$svg$Svg$Attributes$y2(
-						$elm$core$String$fromInt(100 + y)),
-						gateOut1 ? $elm$svg$Svg$Attributes$stroke('green') : $elm$svg$Svg$Attributes$stroke('red')
-					]),
-				_List_Nil),
-				A2(
-				$elm$svg$Svg$rect,
-				_List_fromArray(
-					[
-						$elm$svg$Svg$Attributes$height('20'),
-						$elm$svg$Svg$Attributes$width('20'),
-						$elm$svg$Svg$Attributes$x(
-						$elm$core$String$fromInt(180 - x)),
-						$elm$svg$Svg$Attributes$y(
-						$elm$core$String$fromInt(100 + y)),
-						$elm$svg$Svg$Attributes$fill(
-						gateOut1 ? 'green' : 'red')
-					]),
-				_List_fromArray(
-					[
-						$elm$svg$Svg$text(gate1)
-					]))
-			]);
-	});
-var $elm$core$Tuple$second = function (_v0) {
-	var y = _v0.b;
-	return y;
-};
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Main$gateDrawer = F3(
-	function (g, l, t) {
-		var _v0 = $elm$core$List$isEmpty(l);
-		if (_v0) {
-			return _List_Nil;
-		} else {
-			return A2(
-				$elm$core$List$cons,
-				A2(
-					$author$project$Main$makeGate,
-					t,
-					A2(
-						$elm$core$Maybe$withDefault,
-						_Utils_Tuple2('', true),
-						$elm$core$List$head(l))),
-				A3(
-					$author$project$Main$gateDrawer,
-					g,
-					A2($elm$core$List$drop, 1, l),
-					_Utils_Tuple2(t.a - 1, t.b + 1)));
-		}
-	});
-var $elm$html$Html$i = _VirtualDom_node('i');
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$Attributes$title = $elm$html$Html$Attributes$stringProperty('title');
-var $author$project$Main$ourTextArea = function (model) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$id('div2'),
-				A2($elm$html$Html$Attributes$style, 'background-color', 'lightgray'),
-				A2($elm$html$Html$Attributes$style, 'padding', '16px')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onInput($author$project$Main$TextInput),
-						$elm$html$Html$Attributes$title('Enter Expression Here'),
-						A2($elm$html$Html$Attributes$style, 'width', '100%'),
-						A2($elm$html$Html$Attributes$style, 'padding', '10px'),
-						A2($elm$html$Html$Attributes$style, 'height', '100px')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$i,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'color', 'black')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(model.textInput.boolExpr),
-								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								A2($elm$html$Html$br, _List_Nil, _List_Nil),
-								function () {
-								var _v0 = model.success;
-								if (_v0.$ === 'Nothing') {
-									return $elm$html$Html$text('Error :(');
-								} else {
-									var r = _v0.a;
-									var _v1 = r.evaluation;
-									if (_v1 === 'Nothing') {
-										return $elm$html$Html$text(r.parseError);
-									} else {
-										return A2(
-											$elm$html$Html$div,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$i,
-													_List_fromArray(
-														[
-															A2($elm$html$Html$Attributes$style, 'color', 'red')
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text(r.evaluation)
-														])),
-													$author$project$Main$fromSvg(
-													$elm$core$List$concat(
-														A3(
-															$author$project$Main$gateDrawer,
-															$author$project$Main$makeGate,
-															r.gatesAndOuts,
-															_Utils_Tuple2(0, 0))))
-												]));
-									}
-								}
-							}()
-							]))
-					]))
-			]));
-};
-var $author$project$Main$xor = _Utils_chr('\u2295');
-var $author$project$Main$calculator = function (m) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$id('calculator'),
-				A2($elm$html$Html$Attributes$style, 'background-color', 'blue'),
-				A2($elm$html$Html$Attributes$style, 'padding', '20px'),
-				A2($elm$html$Html$Attributes$style, 'border-raidus', '20px'),
-				A2($elm$html$Html$Attributes$style, 'box-shadow', '0 4px 8px rgba(0,0,0,0.2)')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('display')
-					]),
-				_List_fromArray(
-					[
-						$author$project$Main$ourTextArea(m)
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('button grid'),
-						A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-						A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'auto auto auto auto'),
-						A2($elm$html$Html$Attributes$style, 'gap', '10px')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator(
-									_Utils_chr('T')))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('T')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator(
-									_Utils_chr('F')))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('F')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$notChar))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u00AC')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'background-color', 'yellow'),
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$and))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u2227')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$or))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u2228')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$ifThen))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u2192')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$iff))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u2194')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$xor))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u2295')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$nand))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u22BC')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Operator($author$project$Main$nor))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('\u22BD')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'background-color', 'red'),
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Symbol(
-									_Utils_chr('(')))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('(')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Symbol(
-									_Utils_chr(')')))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(')')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Erase('backspace'))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('<- backspace')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								A2($elm$html$Html$Attributes$style, 'background-color', 'green'),
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Erase('delete'))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('NUKE')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick(
-								$author$project$Main$Symbol(
-									_Utils_chr(' ')))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('space')
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Post),
-								A2($elm$html$Html$Attributes$style, 'background-color', 'orange'),
-								A2($elm$html$Html$Attributes$style, 'color', 'white'),
-								A2($elm$html$Html$Attributes$style, 'border', 'none')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Enter ->')
-							]))
-					]))
-			]));
-};
-var $author$project$Main$viewServerResponse = function (model) {
-	var _v0 = model.success;
+var $author$project$Main$selectPicture = function (model) {
+	var _v0 = model.selectImage;
 	if (_v0.$ === 'Nothing') {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					A2($elm$html$Html$Attributes$style, 'color', 'white')
-				]),
-			_List_fromArray(
-				[
-					function () {
-					var _v1 = model.loading;
-					if (_v1) {
-						return $elm$html$Html$text('Loading');
-					} else {
-						return $elm$html$Html$text('');
-					}
-				}(),
-					$author$project$Main$calculator(model)
-				]));
+		return $elm$core$Maybe$Nothing;
 	} else {
-		var s = _v0.a;
-		var _v2 = s.evaluation;
-		if (_v2 === 'Nothing') {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'color', 'white')
-					]),
-				_List_fromArray(
-					[
-						function () {
-						var _v3 = model.loading;
-						if (_v3) {
-							return $elm$html$Html$text('Loading');
-						} else {
-							return $elm$html$Html$text('');
-						}
-					}(),
-						$author$project$Main$calculator(model)
-					]));
-		} else {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'color', 'white')
-					]),
-				_List_fromArray(
-					[
-						function () {
-						var _v4 = model.loading;
-						if (_v4) {
-							return $elm$html$Html$text('Loading');
-						} else {
-							return $elm$html$Html$text('');
-						}
-					}(),
-						$author$project$Main$calculator(model)
-					]));
-		}
+		var number = _v0.a;
+		return A2($elm$core$Array$get, number, $author$project$Main$myImages);
 	}
+};
+var $author$project$Main$myDivPicture = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'position', 'relative'),
+				A2($elm$html$Html$Attributes$style, 'top', '10vh'),
+				A2($elm$html$Html$Attributes$style, 'left', '0')
+			]),
+		_List_fromArray(
+			[
+				function () {
+				var _v0 = $author$project$Main$selectPicture(model);
+				if (_v0.$ === 'Nothing') {
+					return $elm$html$Html$text('Error cannot find image');
+				} else {
+					var im = _v0.a;
+					return im;
+				}
+			}()
+			]));
 };
 var $author$project$Main$view = function (model) {
 	return A2(
 		$elm$html$Html$div,
-		_List_Nil,
 		_List_fromArray(
 			[
-				$author$project$Main$myHeader,
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$id('div1'),
-						A2($elm$html$Html$Attributes$style, 'padding', '0 auto'),
-						A2($elm$html$Html$Attributes$style, 'max-width', '600px'),
-						A2($elm$html$Html$Attributes$style, 'margin', '0 auto'),
-						A2($elm$html$Html$Attributes$style, 'background-color', '#332')
-					]),
-				_List_fromArray(
-					[
-						$author$project$Main$viewServerResponse(model),
-						$author$project$Main$myFooter
-					])),
-				function () {
-				var _v0 = model.switchImage;
-				if (_v0.$ === 'Nothing') {
-					return $elm$html$Html$text('');
-				} else {
-					var i = _v0.a;
-					var _v1 = A2($elm$core$Array$get, i - 1, $author$project$Main$myImages);
-					if (_v1.$ === 'Nothing') {
-						return $elm$html$Html$text('');
-					} else {
-						var im = _v1.a;
-						return im;
-					}
-				}
-			}(),
-				function () {
-				var _v2 = model.soundNumber;
-				if (_v2.$ === 'Nothing') {
-					return $elm$html$Html$text('');
-				} else {
-					var i = _v2.a;
-					var _v3 = A2($elm$core$Array$get, i - 1, $author$project$Main$myAudio);
-					if (_v3.$ === 'Nothing') {
-						return $elm$html$Html$text('');
-					} else {
-						var au = _v3.a;
-						return au;
-					}
-				}
-			}()
+				A2($elm$html$Html$Attributes$style, 'width', '100vw'),
+				A2($elm$html$Html$Attributes$style, 'height', '100vh'),
+				A2($elm$html$Html$Attributes$style, 'background-color', 'grey'),
+				A2($elm$html$Html$Attributes$style, 'position', 'relative')
+			]),
+		_List_fromArray(
+			[
+				$author$project$Main$header,
+				$author$project$Main$display(model),
+				$author$project$Main$buttonGrid,
+				$author$project$Main$myDivPicture(model)
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
