@@ -7022,10 +7022,38 @@ var $elm$core$Array$get = F2(
 			A3($elm$core$Array$getHelp, startShift, index, tree)));
 	});
 var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
-var $elm$html$Html$h2 = _VirtualDom_node('h2');
-var $elm$html$Html$header = _VirtualDom_node('header');
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$footer = _VirtualDom_node('footer');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$myFooter = A2(
+	$elm$html$Html$footer,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'border', 'solid'),
+			A2($elm$html$Html$Attributes$style, 'background-color', 'red')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$a,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$href('https://github.com/alec-guy')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('contact me here if you want to cringe')
+				]))
+		]));
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$header = _VirtualDom_node('header');
 var $author$project$Main$myHeader = A2(
 	$elm$html$Html$header,
 	_List_fromArray(
@@ -7643,7 +7671,8 @@ var $author$project$Main$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						$author$project$Main$viewServerResponse(model)
+						$author$project$Main$viewServerResponse(model),
+						$author$project$Main$myFooter
 					])),
 				function () {
 				var _v0 = model.switchImage;

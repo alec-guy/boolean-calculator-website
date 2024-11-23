@@ -125,6 +125,16 @@ update msg model =
 subscriptions : Model -> Sub Msg 
 subscriptions model = Time.every (15 * 1000) (\_ -> NewImage) 
 
+myFooter : Html Msg 
+myFooter = 
+   Html.footer 
+   [Attr.style "border" "solid"
+   ,Attr.style "background-color" "red"
+   ]
+   [ Html.a 
+    [Attr.href "https://github.com/alec-guy"]
+    [Html.text "contact me here if you want to cringe"]
+   ]
 myHeader : Html Msg 
 myHeader = 
     Html.header 
@@ -150,6 +160,7 @@ view model =
     ,Attr.style "background-color" "#332"
     ] 
     [ viewServerResponse model 
+    , myFooter
     ]
   
   
