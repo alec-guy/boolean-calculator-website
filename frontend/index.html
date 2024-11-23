@@ -7076,6 +7076,158 @@ var $author$project$Main$TextInput = function (a) {
 	return {$: 'TextInput', a: a};
 };
 var $elm$html$Html$br = _VirtualDom_node('br');
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$svg$Svg$Attributes$height = _VirtualDom_attribute('height');
+var $elm$svg$Svg$trustedNode = _VirtualDom_nodeNS('http://www.w3.org/2000/svg');
+var $elm$svg$Svg$svg = $elm$svg$Svg$trustedNode('svg');
+var $elm$svg$Svg$Attributes$viewBox = _VirtualDom_attribute('viewBox');
+var $elm$svg$Svg$Attributes$width = _VirtualDom_attribute('width');
+var $author$project$Main$fromSvg = function (l) {
+	return A2(
+		$elm$svg$Svg$svg,
+		_List_fromArray(
+			[
+				$elm$svg$Svg$Attributes$viewBox('0 0 200 150'),
+				$elm$svg$Svg$Attributes$width('400px'),
+				$elm$svg$Svg$Attributes$height('400px')
+			]),
+		l);
+};
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$svg$Svg$Attributes$fill = _VirtualDom_attribute('fill');
+var $elm$svg$Svg$line = $elm$svg$Svg$trustedNode('line');
+var $elm$svg$Svg$rect = $elm$svg$Svg$trustedNode('rect');
+var $elm$svg$Svg$Attributes$stroke = _VirtualDom_attribute('stroke');
+var $elm$svg$Svg$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$svg$Svg$Attributes$x = _VirtualDom_attribute('x');
+var $elm$svg$Svg$Attributes$x1 = _VirtualDom_attribute('x1');
+var $elm$svg$Svg$Attributes$x2 = _VirtualDom_attribute('x2');
+var $elm$svg$Svg$Attributes$y = _VirtualDom_attribute('y');
+var $elm$svg$Svg$Attributes$y1 = _VirtualDom_attribute('y1');
+var $elm$svg$Svg$Attributes$y2 = _VirtualDom_attribute('y2');
+var $author$project$Main$makeGate = F2(
+	function (_v0, _v1) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var gate1 = _v1.a;
+		var gateOut1 = _v1.b;
+		return _List_fromArray(
+			[
+				A2(
+				$elm$svg$Svg$line,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$x1(
+						$elm$core$String$fromInt(180 - x)),
+						$elm$svg$Svg$Attributes$y1(
+						$elm$core$String$fromInt(100 + y)),
+						$elm$svg$Svg$Attributes$x2(
+						$elm$core$String$fromInt(200 - x)),
+						$elm$svg$Svg$Attributes$y2(
+						$elm$core$String$fromInt(100 + y)),
+						gateOut1 ? $elm$svg$Svg$Attributes$stroke('green') : $elm$svg$Svg$Attributes$stroke('red')
+					]),
+				_List_Nil),
+				A2(
+				$elm$svg$Svg$rect,
+				_List_fromArray(
+					[
+						$elm$svg$Svg$Attributes$height('20'),
+						$elm$svg$Svg$Attributes$width('20'),
+						$elm$svg$Svg$Attributes$x(
+						$elm$core$String$fromInt(180 - x)),
+						$elm$svg$Svg$Attributes$y(
+						$elm$core$String$fromInt(100 + y)),
+						$elm$svg$Svg$Attributes$fill(
+						gateOut1 ? 'green' : 'red')
+					]),
+				_List_fromArray(
+					[
+						$elm$svg$Svg$text(gate1)
+					]))
+			]);
+	});
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Main$gateDrawer = F3(
+	function (g, l, t) {
+		var _v0 = $elm$core$List$isEmpty(l);
+		if (_v0) {
+			return _List_Nil;
+		} else {
+			return A2(
+				$elm$core$List$cons,
+				A2(
+					$author$project$Main$makeGate,
+					t,
+					A2(
+						$elm$core$Maybe$withDefault,
+						_Utils_Tuple2('', true),
+						$elm$core$List$head(l))),
+				A3(
+					$author$project$Main$gateDrawer,
+					g,
+					A2($elm$core$List$drop, 1, l),
+					_Utils_Tuple2(t.a - 1, t.b + 1)));
+		}
+	});
 var $elm$html$Html$i = _VirtualDom_node('i');
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -7150,15 +7302,32 @@ var $author$project$Main$ourTextArea = function (model) {
 								} else {
 									var r = _v0.a;
 									var _v1 = r.evaluation;
-									switch (_v1) {
-										case 'Nothing':
-											return $elm$html$Html$text(r.parseError);
-										case 'True':
-											return $elm$html$Html$text('True');
-										case 'False':
-											return $elm$html$Html$text('False');
-										default:
-											return $elm$html$Html$text('Could not parse response');
+									if (_v1 === 'Nothing') {
+										return $elm$html$Html$text(r.parseError);
+									} else {
+										return A2(
+											$elm$html$Html$div,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$i,
+													_List_fromArray(
+														[
+															A2($elm$html$Html$Attributes$style, 'color', 'red')
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text(r.evaluation)
+														])),
+													$author$project$Main$fromSvg(
+													$elm$core$List$concat(
+														A3(
+															$author$project$Main$gateDrawer,
+															$author$project$Main$makeGate,
+															r.gatesAndOuts,
+															_Utils_Tuple2(0, 0))))
+												]));
 									}
 								}
 							}()

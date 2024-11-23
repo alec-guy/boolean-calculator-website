@@ -37,18 +37,22 @@ parseConstant = do
 parseTerm :: Parser (Gate Bool) 
 parseTerm = do 
     spaceParser
-    myLexemeWrapper (
-     Combinators.choice
-     [ parens parseExpression  -- Try parsing parenthesized expressions first
-     , parseConstant          -- Then try parsing constants
-     ])
+    myLexemeWrapper $ 
+       (Mega.try 
+       (parens parseExpression))
+       Mega.<|>   
+       (Mega.try
+       parseConstant
+       )  -- Try parsing parenthesized expressions first
+     
+
 
 parseExpression :: Parser (Gate Bool)
 parseExpression = do 
-    expr <- (myLexemeWrapper $ Expr.makeExprParser parseTerm table)
+    expr <- (Expr.makeExprParser parseTerm table)
     return expr
     where
-        table = [[Expr.Postfix parseNot ,Expr.Postfix parseId] 
+        table = [[Expr.Prefix parseNot ,Expr.Postfix parseId] 
                 ,[Expr.InfixR parseAnd]
                 ,[Expr.InfixR parseOr
                  ,Expr.InfixR parseIf
@@ -62,7 +66,7 @@ parseExpression = do
 
 parseNot = do 
     CM.void  $ Combinators.choice 
-        [mySymbolParser "~", mySymbolParser "\x00AC", mySymbolParser "!"] 
+        [mySymbolParser "~", mySymbolParser "\x00AC", mySymbolParser "!", mySymbolParser "¬"] 
     return Not
 
 parseId = do
@@ -86,7 +90,7 @@ parseIf = do
 
 parseIff = do
     CM.void $ Combinators.choice 
-        [mySymbolParser "\x21D4", mySymbolParser "\x2192", mySymbolParser "\x2261"]
+        [mySymbolParser "\x21D4", mySymbolParser "\x2192", mySymbolParser "\x2261", mySymbolParser "↔"]
     return Iff
 
 parseXor = do
