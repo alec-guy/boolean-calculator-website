@@ -124,15 +124,19 @@ header =
      , Attr.style "width" "50vw"
      , Attr.style "height" "5vh"
      , Attr.style "right"  "50vw"
+     , Attr.style "background-color" "#eed49f"
       
      ] 
-     [i [] [Html.text "Logic Calculator"]] 
+     [i 
+      [Attr.style "font-family" "Arial, Helvetica, sans-serif"] 
+      [Html.text "Logic Calculator"]
+     ] 
 
 display : Model -> Html Msg 
 display model = 
    div 
    [Attr.style "position" "absolute"
-   ,Attr.style "background-color" "lightyellow"
+   ,Attr.style "background-color" "#c6a0f6" 
    ,Attr.style "height" "130px"
    ,Attr.style "width"  "330px"
    ,Attr.style "left" "39vw"
@@ -145,7 +149,7 @@ display model =
    , case model.success of 
       Nothing -> Html.text ""
       (Just response) -> case response.evaluation of 
-                          "Nothing" -> Html.text "Error : Parsing"
+                          "Nothing" -> Html.text ""
                           _         -> Html.text ""
    ]
    
@@ -161,6 +165,7 @@ buttonGrid =
    , Attr.style "grid-template-columns" "repeat(4,75px)"
    , Attr.style "grid-template-rows"    "repeat(5,60px)"
    , Attr.style "gap" "10px"
+   , Attr.style "background-color" "#b7bdf8" --lavender
    ]
    [ button [onClick <| Operator 'T'] [Html.text "T"]
    , button [onClick <| Operator 'F'] [Html.text "F"] 
@@ -187,7 +192,7 @@ view model =
      [ 
       Attr.style "width" "100vw"
      ,Attr.style "height" "100vh"
-     ,Attr.style "background-color" "grey"
+     ,Attr.style "background-color" "#f5a97f"
      ,Attr.style "position" "relative"
       
      ] 
