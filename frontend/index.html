@@ -7009,7 +7009,9 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Main$or = _Utils_chr('\u2228');
+var $author$project$Main$pink = '#f5bde6';
 var $author$project$Main$sapphire = '#74c7ec';
+var $author$project$Main$sky = '#91d7e3';
 var $author$project$Main$xor = _Utils_chr('\u2295');
 var $author$project$Main$buttonGrid = function (m) {
 	return A2(
@@ -7055,6 +7057,32 @@ var $author$project$Main$buttonGrid = function (m) {
 				_List_fromArray(
 					[
 						m.zerosAndOnes ? $elm$html$Html$text('0') : $elm$html$Html$text('F')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator(
+							_Utils_chr('('))),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$pink)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('(')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator(
+							_Utils_chr(')'))),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sky)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(')')
 					])),
 				A2(
 				$elm$html$Html$button,
@@ -7165,32 +7193,35 @@ var $author$project$Main$buttonGrid = function (m) {
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onClick(
-						$author$project$Main$Erase('delete'))
+						$author$project$Main$Erase('backspace')),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$pink)
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('<- Delete')
+						$elm$html$Html$text('← DELETE')
 					])),
 				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Events$onClick($author$project$Main$Post)
+						$elm$html$Html$Events$onClick($author$project$Main$Post),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sky)
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('<- Enter')
+						$elm$html$Html$text('← ENTER')
 					])),
 				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
 						$elm$html$Html$Events$onClick(
-						$author$project$Main$Erase('backspace'))
+						$author$project$Main$Erase('delete')),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$pink)
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('<- Backspace')
+						$elm$html$Html$text('← ERASE')
 					])),
 				A2(
 				$elm$html$Html$button,
@@ -7198,11 +7229,12 @@ var $author$project$Main$buttonGrid = function (m) {
 					[
 						$elm$html$Html$Events$onClick(
 						$author$project$Main$Operator(
-							_Utils_chr(' ')))
+							_Utils_chr(' '))),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sky)
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('     ')
+						$elm$html$Html$text('SPACE')
 					]))
 			]));
 };
@@ -7268,6 +7300,63 @@ var $author$project$Main$header = A2(
 					$elm$html$Html$text('Logic Calculator')
 				]))
 		]));
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $author$project$Main$fromBool = function (b) {
+	if (b) {
+		return 'True';
+	} else {
+		return 'False';
+	}
+};
+var $elm$core$Tuple$second = function (_v0) {
+	var y = _v0.b;
+	return y;
+};
+var $author$project$Main$makeGates = function (l) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+				A2($elm$html$Html$Attributes$style, 'bottom', '0'),
+				A2($elm$html$Html$Attributes$style, 'left', '100%'),
+				A2($elm$html$Html$Attributes$style, 'transform', 'translateX(-100%)')
+			]),
+		$elm$core$List$concat(
+			A2(
+				$elm$core$List$map,
+				function (t) {
+					return _List_fromArray(
+						[
+							$elm$html$Html$text(
+							$author$project$Main$fromBool(t.b)),
+							A2($elm$html$Html$br, _List_Nil, _List_Nil),
+							A2(
+							$elm$html$Html$i,
+							_List_fromArray(
+								[
+									A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sky)
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									(t.a === 'wire') ? '' : t.a)
+								])),
+							A2($elm$html$Html$br, _List_Nil, _List_Nil)
+						]);
+				},
+				l)));
+};
 var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
 var $elm$core$Basics$ge = _Utils_ge;
 var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
@@ -7355,7 +7444,16 @@ var $author$project$Main$view = function (model) {
 				$author$project$Main$binaryBox,
 				$author$project$Main$display(model),
 				$author$project$Main$buttonGrid(model),
-				$author$project$Main$myDivPicture(model)
+				$author$project$Main$myDivPicture(model),
+				function () {
+				var _v0 = model.success;
+				if (_v0.$ === 'Nothing') {
+					return $elm$html$Html$text('');
+				} else {
+					var r = _v0.a;
+					return $author$project$Main$makeGates(r.gatesAndOuts);
+				}
+			}()
 			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(

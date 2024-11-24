@@ -203,6 +203,8 @@ buttonGrid m =
      ,Attr.style "background-color" "#f38ba8"
      ] 
      [if m.zerosAndOnes then Html.text "0" else Html.text "F"] 
+   , button [onClick <| Operator '(', Attr.style "background-color" pink] [Html.text "("]
+   , button [onClick <| Operator ')', Attr.style "background-color" sky] [Html.text ")"]
    , button [onClick <| Operator and, Attr.style "background-color" sapphire] [Html.text <| String.fromChar and]
    , button [onClick <| Operator or,Attr.style "background-color" sapphire] [Html.text <| String.fromChar or]
    , button [onClick <| Operator notChar,Attr.style "background-color" sapphire] [Html.text <| String.fromChar notChar]
@@ -211,17 +213,26 @@ buttonGrid m =
    , button [onClick <| Operator nand,Attr.style "background-color" sapphire] [Html.text <| String.fromChar nand]
    , button [onClick <| Operator nor,Attr.style "background-color" sapphire] [Html.text <| String.fromChar nor]
    , button [onClick <| Operator xor,Attr.style "background-color" sapphire] [Html.text <| String.fromChar xor]
-   , button [onClick <| Erase "delete"] [Html.text "<- Delete"] 
-   , button [onClick Post] [Html.text "<- Enter"]
-   , button [onClick <| Erase "backspace"] [Html.text "<- Backspace"]
-   , button [onClick <| Operator ' '] [Html.text "     "]
+   , button [onClick <| Erase "backspace" , Attr.style "background-color" pink] [Html.text "← DELETE"]
+   , button [onClick Post, Attr.style "background-color" sky] [Html.text "← ENTER"]  
+   , button [onClick <| Erase "delete", Attr.style "background-color" pink] [Html.text "← ERASE"] 
+   , button 
+     [onClick <| Operator ' ', Attr.style "background-color" sky] 
+     [Html.text "SPACE"]
+    
    ]
+   
 {-
 calculatorDisplay : Html Msg
 calculatorDisplay = 
 -}
 sapphire : String 
 sapphire = "#74c7ec"
+pink : String 
+pink = "#f5bde6"
+sky : String 
+sky = "#91d7e3"
+
 view : Model -> Html Msg 
 view model = 
      div 
@@ -237,7 +248,34 @@ view model =
      , display model
      , buttonGrid model 
      , myDivPicture model
+     , case model.success of 
+        Nothing -> Html.text ""
+        (Just r) -> makeGates r.gatesAndOuts
      ]
+
+
+makeGates : List (String, Bool) -> Html Msg 
+makeGates l = 
+    div
+        [ Attr.style "position" "absolute"
+        , Attr.style "bottom" "0"
+        , Attr.style "left" "100%"
+        , Attr.style "transform" "translateX(-100%)"
+        ]
+        (
+            List.concat
+                (List.map 
+                    (\t -> 
+                        [ Html.text <| fromBool (Tuple.second t)
+                        , br [] []
+                        , i [Attr.style "background-color" sky] [Html.text <| (if (Tuple.first t) == "wire" then "" else Tuple.first t)]
+                        , br [] []
+                        ]
+                    ) 
+                    l
+                )
+        )
+
 myDivPicture : Model -> Html Msg
 myDivPicture model = 
     div 
