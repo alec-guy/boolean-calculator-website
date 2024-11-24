@@ -32,7 +32,10 @@ parseConstant = do
                                              ,MegaChar.char' 'F'
                                              ,MegaChar.char '1'
                                              ,MegaChar.char '0']
-    return $ Wire $ (eitherTrueOrFalse == 'T')
+    case eitherTrueOrFalse of 
+        '1' -> return $ Wire True 
+        'T' -> return $ Wire True 
+        _   -> return $ Wire False 
 
 parseTerm :: Parser (Gate Bool) 
 parseTerm = do 
