@@ -5438,7 +5438,8 @@ var $author$project$Main$initialModel = {
 	soundNumber: $elm$core$Maybe$Just(1),
 	success: $elm$core$Maybe$Nothing,
 	successfulExpression: '',
-	textInput: {boolExpr: ''}
+	textInput: {boolExpr: ''},
+	zerosAndOnes: false
 };
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
@@ -5872,6 +5873,16 @@ var $author$project$Main$subscriptions = function (model) {
 var $author$project$Main$ImageNumber = function (a) {
 	return {$: 'ImageNumber', a: a};
 };
+var $author$project$Main$binaryify = function (s) {
+	switch (s) {
+		case 'True':
+			return '1';
+		case 'False':
+			return '0';
+		default:
+			return '';
+	}
+};
 var $elm$core$Basics$negate = function (n) {
 	return -n;
 };
@@ -6047,6 +6058,7 @@ var $author$project$Main$myImages = $elm$core$Array$fromList(
 			$author$project$Main$pathToMyImage('/images/bubblegum.png'),
 			$author$project$Main$pathToMyImage('/images/fin.png')
 		]));
+var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Bitwise$and = _Bitwise_and;
 var $elm$core$Bitwise$xor = _Bitwise_xor;
 var $elm$random$Random$peel = function (_v0) {
@@ -6822,7 +6834,7 @@ var $author$project$Main$update = F2(
 							{
 								loading: false,
 								success: $elm$core$Maybe$Just(r),
-								successfulExpression: model.textInput.boolExpr + (' = ' + ((r.evaluation === 'Nothing') ? '' : r.evaluation))
+								successfulExpression: model.textInput.boolExpr + (' = ' + ((r.evaluation === 'Nothing') ? '' : (model.zerosAndOnes ? $author$project$Main$binaryify(r.evaluation) : r.evaluation)))
 							}),
 						$elm$core$Platform$Cmd$none);
 				} else {
@@ -6899,7 +6911,7 @@ var $author$project$Main$update = F2(
 						$elm$random$Random$generate,
 						$author$project$Main$ImageNumber,
 						$author$project$Main$oneToX($author$project$Main$myImages)));
-			default:
+			case 'ImageNumber':
 				var i = msg.a;
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -6908,23 +6920,20 @@ var $author$project$Main$update = F2(
 							selectImage: $elm$core$Maybe$Just(i)
 						}),
 					$elm$core$Platform$Cmd$none);
+			default:
+				var b = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{zerosAndOnes: !model.zerosAndOnes}),
+					$elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Main$Erase = function (a) {
-	return {$: 'Erase', a: a};
+var $author$project$Main$IsChecked = function (a) {
+	return {$: 'IsChecked', a: a};
 };
-var $author$project$Main$Operator = function (a) {
-	return {$: 'Operator', a: a};
-};
-var $author$project$Main$Post = {$: 'Post'};
-var $author$project$Main$and = _Utils_chr('\u2227');
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $author$project$Main$ifThen = _Utils_chr('\u2192');
-var $author$project$Main$iff = _Utils_chr('\u2194');
-var $author$project$Main$nand = _Utils_chr('\u22BC');
-var $author$project$Main$nor = _Utils_chr('\u22BD');
-var $author$project$Main$notChar = _Utils_chr('\u00AC');
+var $elm$html$Html$input = _VirtualDom_node('input');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -6936,6 +6945,63 @@ var $elm$html$Html$Events$on = F2(
 			event,
 			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetChecked = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'checked']),
+	$elm$json$Json$Decode$bool);
+var $elm$html$Html$Events$onCheck = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'change',
+		A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetChecked));
+};
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
+var $author$project$Main$binaryBox = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+			A2($elm$html$Html$Attributes$style, 'right', '0vw'),
+			A2($elm$html$Html$Attributes$style, 'height', '100px'),
+			A2($elm$html$Html$Attributes$style, 'width', '100px'),
+			A2($elm$html$Html$Attributes$style, 'background-color', '#a6e3a1'),
+			A2($elm$html$Html$Attributes$style, 'top', '0vh')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$input,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$type_('checkbox'),
+					$elm$html$Html$Events$onCheck($author$project$Main$IsChecked)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Switch Booleans to 1s and 0s ')
+				]))
+		]));
+var $author$project$Main$Erase = function (a) {
+	return {$: 'Erase', a: a};
+};
+var $author$project$Main$Operator = function (a) {
+	return {$: 'Operator', a: a};
+};
+var $author$project$Main$Post = {$: 'Post'};
+var $author$project$Main$and = _Utils_chr('\u2227');
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Main$ifThen = _Utils_chr('\u2192');
+var $author$project$Main$iff = _Utils_chr('\u2194');
+var $author$project$Main$nand = _Utils_chr('\u22BC');
+var $author$project$Main$nor = _Utils_chr('\u22BD');
+var $author$project$Main$notChar = _Utils_chr('\u00AC');
 var $elm$html$Html$Events$onClick = function (msg) {
 	return A2(
 		$elm$html$Html$Events$on,
@@ -6943,191 +7009,203 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Main$or = _Utils_chr('\u2228');
-var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$sapphire = '#74c7ec';
 var $author$project$Main$xor = _Utils_chr('\u2295');
-var $author$project$Main$buttonGrid = A2(
-	$elm$html$Html$div,
-	_List_fromArray(
-		[
-			A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
-			A2($elm$html$Html$Attributes$style, 'top', '50vh'),
-			A2($elm$html$Html$Attributes$style, 'left', '39vw'),
-			A2($elm$html$Html$Attributes$style, 'width', '150px'),
-			A2($elm$html$Html$Attributes$style, 'height', '200px'),
-			A2($elm$html$Html$Attributes$style, 'display', 'grid'),
-			A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(4,75px)'),
-			A2($elm$html$Html$Attributes$style, 'grid-template-rows', 'repeat(5,60px)'),
-			A2($elm$html$Html$Attributes$style, 'gap', '10px'),
-			A2($elm$html$Html$Attributes$style, 'background-color', '#b7bdf8')
-		]),
-	_List_fromArray(
-		[
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator(
-						_Utils_chr('T')))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('T')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator(
-						_Utils_chr('F')))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('F')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$and))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$and))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$or))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$or))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$notChar))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$notChar))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$ifThen))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$ifThen))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$iff))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$iff))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$nand))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$nand))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$nor))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$nor))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator($author$project$Main$xor))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					$elm$core$String$fromChar($author$project$Main$xor))
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Erase('delete'))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('<- Delete')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick($author$project$Main$Post)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('<- Enter')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Erase('backspace'))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('<- Backspace')
-				])),
-			A2(
-			$elm$html$Html$button,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onClick(
-					$author$project$Main$Operator(
-						_Utils_chr(' ')))
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('     ')
-				]))
-		]));
+var $author$project$Main$buttonGrid = function (m) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+				A2($elm$html$Html$Attributes$style, 'top', '50vh'),
+				A2($elm$html$Html$Attributes$style, 'left', '39vw'),
+				A2($elm$html$Html$Attributes$style, 'width', '150px'),
+				A2($elm$html$Html$Attributes$style, 'height', '200px'),
+				A2($elm$html$Html$Attributes$style, 'display', 'grid'),
+				A2($elm$html$Html$Attributes$style, 'grid-template-columns', 'repeat(4,75px)'),
+				A2($elm$html$Html$Attributes$style, 'grid-template-rows', 'repeat(5,60px)'),
+				A2($elm$html$Html$Attributes$style, 'gap', '10px')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						m.zerosAndOnes ? $author$project$Main$Operator(
+							_Utils_chr('1')) : $author$project$Main$Operator(
+							_Utils_chr('T'))),
+						A2($elm$html$Html$Attributes$style, 'background-color', '#a6e3a1')
+					]),
+				_List_fromArray(
+					[
+						m.zerosAndOnes ? $elm$html$Html$text('1') : $elm$html$Html$text('T')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						m.zerosAndOnes ? $author$project$Main$Operator(
+							_Utils_chr('0')) : $author$project$Main$Operator(
+							_Utils_chr('F'))),
+						A2($elm$html$Html$Attributes$style, 'background-color', '#f38ba8')
+					]),
+				_List_fromArray(
+					[
+						m.zerosAndOnes ? $elm$html$Html$text('0') : $elm$html$Html$text('F')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$and)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$and))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$or)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$or))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$notChar)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$notChar))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$ifThen)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$ifThen))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$iff)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$iff))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$nand)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$nand))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$nor)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$nor))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator($author$project$Main$xor)),
+						A2($elm$html$Html$Attributes$style, 'background-color', $author$project$Main$sapphire)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromChar($author$project$Main$xor))
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Erase('delete'))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('<- Delete')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Main$Post)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('<- Enter')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Erase('backspace'))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('<- Backspace')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						$author$project$Main$Operator(
+							_Utils_chr(' ')))
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('     ')
+					]))
+			]));
+};
 var $elm$html$Html$br = _VirtualDom_node('br');
 var $author$project$Main$display = function (model) {
 	return A2(
@@ -7140,7 +7218,8 @@ var $author$project$Main$display = function (model) {
 				A2($elm$html$Html$Attributes$style, 'width', '330px'),
 				A2($elm$html$Html$Attributes$style, 'left', '39vw'),
 				A2($elm$html$Html$Attributes$style, 'top', '30vh'),
-				A2($elm$html$Html$Attributes$style, 'border-style', 'solid')
+				A2($elm$html$Html$Attributes$style, 'border-style', 'solid'),
+				A2($elm$html$Html$Attributes$style, 'font-size', '15 px')
 			]),
 		_List_fromArray(
 			[
@@ -7273,8 +7352,9 @@ var $author$project$Main$view = function (model) {
 		_List_fromArray(
 			[
 				$author$project$Main$header,
+				$author$project$Main$binaryBox,
 				$author$project$Main$display(model),
-				$author$project$Main$buttonGrid,
+				$author$project$Main$buttonGrid(model),
 				$author$project$Main$myDivPicture(model)
 			]));
 };

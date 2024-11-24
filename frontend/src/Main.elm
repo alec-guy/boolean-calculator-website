@@ -54,6 +54,7 @@ type alias Model =
            ,selectImage : Maybe Int
            ,soundNumber : Maybe Int 
            ,successfulExpression : String
+           ,zerosAndOnes : Bool 
            } 
 initialModel =  
              {failure = False
@@ -63,6 +64,7 @@ initialModel =
              ,selectImage = Just 1
              ,soundNumber = Just 1 
              ,successfulExpression = ""
+             ,zerosAndOnes = False
              }
 type alias ServerResponse = 
       { parseError   : String 
@@ -82,7 +84,13 @@ type Msg = Post
          | Symbol Char
          | NewImage 
          | ImageNumber Int
+         | IsChecked Bool
 
+binaryify : String -> String 
+binaryify s = case s of 
+               "True"  -> "1" 
+               "False" -> "0"
+               _       -> ""
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model = 
    case msg of 
@@ -90,7 +98,7 @@ update msg model =
     (GotResult result) -> case result of 
                             Ok r -> ({model | success = Just r 
                                      , loading = False
-                                     , successfulExpression = model.textInput.boolExpr ++ " = " ++ (if r.evaluation == "Nothing" then "" else r.evaluation) 
+                                     , successfulExpression = model.textInput.boolExpr ++ " = " ++ (if r.evaluation == "Nothing" then "" else if model.zerosAndOnes then binaryify r.evaluation else r.evaluation) 
                                      } 
                                      , Cmd.none
                                      )
@@ -108,6 +116,7 @@ update msg model =
     (Symbol sy)            -> ({model | textInput = {boolExpr = model.textInput.boolExpr ++ (String.fromChar sy)}}, Cmd.none)
     (NewImage)           -> (model, Random.generate ImageNumber (oneToX myImages))
     (ImageNumber i)      -> ({model | selectImage = Just i}, Cmd.none)
+    (IsChecked b)        -> ({model | zerosAndOnes = not (model.zerosAndOnes)},Cmd.none)
 
         
 
@@ -132,6 +141,23 @@ header =
       [Html.text "Logic Calculator"]
      ] 
 
+binaryBox : Html Msg 
+binaryBox = 
+    div 
+    [Attr.style "position" "absolute"
+    ,Attr.style "right" "0vw"
+    ,Attr.style "height" "100px"
+    ,Attr.style "width" "100px"
+    ,Attr.style "background-color" "#a6e3a1"
+    ,Attr.style "top" "0vh"
+    ]
+    [
+    Html.input 
+    [Attr.type_ "checkbox"
+    ,onCheck <| IsChecked 
+    ] 
+    [Html.text "Switch Booleans to 1s and 0s "]
+    ]
 display : Model -> Html Msg 
 display model = 
    div 
@@ -142,6 +168,7 @@ display model =
    ,Attr.style "left" "39vw"
    ,Attr.style "top"  "30vh"
    ,Attr.style "border-style" "solid"
+   ,Attr.style "font-size" "15 px"
    ]
    [ Html.text model.textInput.boolExpr
    , br [] []
@@ -153,8 +180,8 @@ display model =
                           _         -> Html.text ""
    ]
    
-buttonGrid : Html Msg 
-buttonGrid = 
+buttonGrid : Model -> Html Msg 
+buttonGrid m = 
    div 
    [ Attr.style "position" "absolute"
    , Attr.style "top" "50vh"
@@ -164,19 +191,26 @@ buttonGrid =
    , Attr.style "display" "grid"
    , Attr.style "grid-template-columns" "repeat(4,75px)"
    , Attr.style "grid-template-rows"    "repeat(5,60px)"
-   , Attr.style "gap" "10px"
-   , Attr.style "background-color" "#b7bdf8" --lavender
+   , Attr.style "gap" "10px" 
    ]
-   [ button [onClick <| Operator 'T'] [Html.text "T"]
-   , button [onClick <| Operator 'F'] [Html.text "F"] 
-   , button [onClick <| Operator and] [Html.text <| String.fromChar and]
-   , button [onClick <| Operator or] [Html.text <| String.fromChar or]
-   , button [onClick <| Operator notChar] [Html.text <| String.fromChar notChar]
-   , button [onClick <| Operator ifThen] [Html.text <| String.fromChar ifThen]
-   , button [onClick <| Operator iff] [Html.text <| String.fromChar iff]
-   , button [onClick <| Operator nand] [Html.text <| String.fromChar nand]
-   , button [onClick <| Operator nor] [Html.text <| String.fromChar nor]
-   , button [onClick <| Operator xor] [Html.text <| String.fromChar xor]
+   [ button 
+     [onClick <| if m.zerosAndOnes then Operator '1' else Operator 'T'
+     ,Attr.style "background-color" "#a6e3a1"
+     ] 
+     [if m.zerosAndOnes then Html.text "1" else Html.text "T"]
+   , button 
+     [onClick <| if m.zerosAndOnes then Operator '0' else Operator 'F'
+     ,Attr.style "background-color" "#f38ba8"
+     ] 
+     [if m.zerosAndOnes then Html.text "0" else Html.text "F"] 
+   , button [onClick <| Operator and, Attr.style "background-color" sapphire] [Html.text <| String.fromChar and]
+   , button [onClick <| Operator or,Attr.style "background-color" sapphire] [Html.text <| String.fromChar or]
+   , button [onClick <| Operator notChar,Attr.style "background-color" sapphire] [Html.text <| String.fromChar notChar]
+   , button [onClick <| Operator ifThen,Attr.style "background-color" sapphire] [Html.text <| String.fromChar ifThen]
+   , button [onClick <| Operator iff,Attr.style "background-color" sapphire] [Html.text <| String.fromChar iff]
+   , button [onClick <| Operator nand,Attr.style "background-color" sapphire] [Html.text <| String.fromChar nand]
+   , button [onClick <| Operator nor,Attr.style "background-color" sapphire] [Html.text <| String.fromChar nor]
+   , button [onClick <| Operator xor,Attr.style "background-color" sapphire] [Html.text <| String.fromChar xor]
    , button [onClick <| Erase "delete"] [Html.text "<- Delete"] 
    , button [onClick Post] [Html.text "<- Enter"]
    , button [onClick <| Erase "backspace"] [Html.text "<- Backspace"]
@@ -186,6 +220,8 @@ buttonGrid =
 calculatorDisplay : Html Msg
 calculatorDisplay = 
 -}
+sapphire : String 
+sapphire = "#74c7ec"
 view : Model -> Html Msg 
 view model = 
      div 
@@ -197,8 +233,9 @@ view model =
       
      ] 
      [ header
+     , binaryBox 
      , display model
-     , buttonGrid
+     , buttonGrid model 
      , myDivPicture model
      ]
 myDivPicture : Model -> Html Msg
